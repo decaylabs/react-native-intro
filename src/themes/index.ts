@@ -11,14 +11,48 @@ export type { Theme, ThemeName } from './types';
 // Re-export themes
 export { classicTheme } from './classic';
 
+// Placeholder themes until Phase 7
+export const modernTheme: Theme = {
+  ...classicTheme,
+  name: 'modern',
+};
+
+export const darkTheme: Theme = {
+  ...classicTheme,
+  name: 'dark',
+  overlay: {
+    backgroundColor: '#000000',
+    opacity: 0.85,
+  },
+  tooltip: {
+    ...classicTheme.tooltip,
+    backgroundColor: '#1e1e1e',
+    titleColor: '#ffffff',
+    contentColor: '#cccccc',
+  },
+};
+
 /**
  * Built-in themes map
  */
 export const themes: Record<ThemeName, Theme> = {
   classic: classicTheme,
-  modern: classicTheme, // TODO: Implement modern theme in Phase 7
-  dark: classicTheme, // TODO: Implement dark theme in Phase 7
+  modern: modernTheme,
+  dark: darkTheme,
 };
+
+/**
+ * Resolve a theme from name or object
+ *
+ * @param theme - Theme name string or custom Theme object
+ * @returns Resolved Theme object
+ */
+export function resolveTheme(theme: ThemeName | Theme): Theme {
+  if (typeof theme === 'string') {
+    return themes[theme] ?? classicTheme;
+  }
+  return theme;
+}
 
 /**
  * Get a theme by name
@@ -27,10 +61,7 @@ export const themes: Record<ThemeName, Theme> = {
  * @returns Resolved theme
  */
 export function getTheme(name: ThemeName | Theme): Theme {
-  if (typeof name === 'string') {
-    return themes[name] ?? classicTheme;
-  }
-  return name;
+  return resolveTheme(name);
 }
 
 /**

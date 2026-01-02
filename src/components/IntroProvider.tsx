@@ -10,7 +10,7 @@ import {
   useMemo,
   type RefObject,
 } from 'react';
-import type { View } from 'react-native';
+import { View } from 'react-native';
 import {
   IntroContext,
   initialIntroState,
@@ -24,12 +24,14 @@ import {
   loadPersistedData,
   savePersistedData,
 } from '../utils/storage';
-import { classicTheme } from '../themes/classic';
+import { TourOverlay } from './TourOverlay';
+import { classicTheme, modernTheme, darkTheme, resolveTheme } from '../themes';
 import type {
   IntroProviderProps,
   TourCallbacks,
   HintCallbacks,
   ElementMeasurement,
+  Theme,
 } from '../types';
 
 /**
@@ -46,12 +48,15 @@ import type {
  */
 export function IntroProvider({
   children,
-  theme: _theme = 'classic',
+  theme = 'classic',
   defaultTourOptions: _defaultTourOptions,
   defaultHintOptions: _defaultHintOptions,
   storageAdapter: customStorageAdapter,
   disablePersistence = false,
 }: IntroProviderProps) {
+  // Resolve theme
+  const resolvedTheme: Theme = useMemo(() => resolveTheme(theme), [theme]);
+
   // State management
   const [state, dispatch] = useReducer(introReducer, initialIntroState);
 
@@ -203,10 +208,13 @@ export function IntroProvider({
 
   return (
     <IntroContext.Provider value={contextValue}>
-      {children}
+      <View style={{ flex: 1 }}>
+        {children}
+        <TourOverlay theme={resolvedTheme} />
+      </View>
     </IntroContext.Provider>
   );
 }
 
-// Re-export theme for consumers
-export { classicTheme };
+// Re-export themes for consumers
+export { classicTheme, modernTheme, darkTheme };
