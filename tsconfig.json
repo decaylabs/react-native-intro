@@ -1,4 +1,5 @@
 {
+  "exclude": ["specs/**/*"],
   "compilerOptions": {
     "rootDir": ".",
     "paths": {

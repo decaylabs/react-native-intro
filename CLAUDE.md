@@ -74,6 +74,20 @@ Uses conventional commits: `fix:`, `feat:`, `refactor:`, `docs:`, `test:`, `chor
 
 Pre-commit hooks (lefthook) enforce linting, type checking, and commit message format.
 
+## Pre-Commit Requirements
+
+**IMPORTANT**: Before completing any code changes, always verify that git hooks will pass:
+
+```bash
+yarn typecheck && yarn lint
+```
+
+If there are lint errors, fix them with `yarn lint --fix` or manually.
+
+### Git Hooks (lefthook)
+
+The pre-commit hook runs `yarn typecheck` and `yarn lint` - code must compile and pass linting before commits are accepted.
+
 ## Active Technologies
 - TypeScript 5.9+ (strict mode) (001-rn-intro-library)
 - AsyncStorage for "Don't show again" preference (with custom adapter option) (001-rn-intro-library)
