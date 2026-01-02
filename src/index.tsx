@@ -14,6 +14,7 @@ export { Tooltip } from './components/Tooltip';
 // Hooks
 export { useIntro } from './hooks/useIntro';
 export { useTour } from './hooks/useTour';
+export { useScrollView } from './hooks/useScrollView';
 export {
   useMeasure,
   measureElement,
@@ -22,6 +23,7 @@ export {
 
 // Context (for advanced usage)
 export { useIntroContext } from './context/useIntroContext';
+export type { ScrollableRef } from './context/IntroContext';
 
 // Utils
 export {

@@ -49,6 +49,14 @@ export interface TourOptions {
   /** Overlay color (default: theme-dependent) */
   overlayColor?: string;
 
+  /**
+   * Enable animations (default: 'auto')
+   * - 'auto': Use Reanimated if available, otherwise no animations
+   * - true: Force animations (requires react-native-reanimated)
+   * - false: Disable all animations
+   */
+  animate?: boolean | 'auto';
+
   /** Animation duration in ms (default: 300) */
   animationDuration?: number;
 

@@ -7,10 +7,18 @@ const root = path.resolve(__dirname, '..');
 module.exports = function (api) {
   api.cache(true);
 
-  return getConfig(
+  const config = getConfig(
     {
       presets: ['babel-preset-expo'],
     },
     { root, pkg }
   );
+
+  // Reanimated plugin must be last
+  config.plugins = [
+    ...(config.plugins || []),
+    'react-native-reanimated/plugin',
+  ];
+
+  return config;
 };

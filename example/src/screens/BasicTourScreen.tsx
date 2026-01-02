@@ -2,53 +2,97 @@
  * BasicTourScreen - Demo screen showing basic tour functionality
  */
 
+import { useRef, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Switch,
+  Modal,
 } from 'react-native';
-import { TourStep, useTour } from 'react-native-intro';
+import {
+  TourStep,
+  useTour,
+  useScrollView,
+  type ScrollableRef,
+} from 'react-native-intro';
 
 export function BasicTourScreen() {
   const tour = useTour();
+  // Use 'any' to work around complex RN 0.81 ScrollView typing
+  const scrollRef = useRef<any>(null);
+
+  // Animation toggle state
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+
+  // Completion modal state
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+
+  // Register ScrollView for auto-scrolling during tour
+  useScrollView(scrollRef as React.RefObject<ScrollableRef | null>);
+
+  // Handle Get Started button press
+  const handleGetStarted = () => {
+    if (tour.isActive) {
+      tour.stop('completed');
+    }
+    setShowCompletionModal(true);
+  };
 
   const startTour = () => {
-    tour.start('basic-tour', [
+    tour.start(
+      'basic-tour',
+      [
+        {
+          id: 'step-1',
+          targetId: 'welcome-header',
+          title: 'Welcome!',
+          content:
+            'This is a demo of the react-native-intro library. Let me show you around!',
+        },
+        {
+          id: 'step-2',
+          targetId: 'info-text',
+          title: 'Auto-Scroll',
+          content:
+            'The tour automatically scrolls to bring off-screen elements into view. Pretty cool, right?',
+        },
+        {
+          id: 'step-3',
+          targetId: 'feature-1',
+          title: 'Feature Highlight',
+          content:
+            'Each feature card can be highlighted with a spotlight effect and tooltip.',
+        },
+        {
+          id: 'step-4',
+          targetId: 'feature-2',
+          title: 'Multiple Steps',
+          content:
+            'Tours can have multiple steps. Navigate with the Next and Back buttons.',
+        },
+        {
+          id: 'step-5',
+          targetId: 'action-button',
+          title: 'Try It Out!',
+          content:
+            'Go ahead and tap the "Get Started" button below to complete the tour!',
+          hideButtons: true,
+        },
+      ],
       {
-        id: 'step-1',
-        targetId: 'welcome-header',
-        title: 'Welcome!',
-        content:
-          'This is a demo of the react-native-intro library. Let me show you around!',
-      },
-      {
-        id: 'step-2',
-        targetId: 'feature-1',
-        title: 'Feature Highlight',
-        content:
-          'Each feature card can be highlighted with a spotlight effect and tooltip.',
-      },
-      {
-        id: 'step-3',
-        targetId: 'feature-2',
-        title: 'Multiple Steps',
-        content:
-          'Tours can have multiple steps. Navigate with the Next and Back buttons.',
-      },
-      {
-        id: 'step-4',
-        targetId: 'action-button',
-        title: 'Call to Action',
-        content:
-          'Highlight important actions to guide users through your app. Click Done to finish!',
-      },
-    ]);
+        // Pass animation setting based on toggle
+        animate: animationsEnabled,
+        // Slower animations for dramatic effect
+        animationDuration: 500,
+      }
+    );
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView ref={scrollRef} style={styles.container}>
       {/* Header */}
       <TourStep id="welcome-header">
         <View style={styles.header}>
@@ -58,6 +102,20 @@ export function BasicTourScreen() {
           </Text>
         </View>
       </TourStep>
+
+      {/* Animation Toggle */}
+      <View style={styles.toggleContainer}>
+        <Text style={styles.toggleLabel}>Animations</Text>
+        <Switch
+          value={animationsEnabled}
+          onValueChange={setAnimationsEnabled}
+          trackColor={{ false: '#ccc', true: '#81b0ff' }}
+          thumbColor={animationsEnabled ? '#007AFF' : '#f4f3f4'}
+        />
+        <Text style={styles.toggleStatus}>
+          {animationsEnabled ? 'ON' : 'OFF'}
+        </Text>
+      </View>
 
       {/* Start Tour Button */}
       <TouchableOpacity
@@ -111,18 +169,48 @@ export function BasicTourScreen() {
 
       {/* Action Button */}
       <TourStep id="action-button">
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleGetStarted}
+        >
           <Text style={styles.actionButtonText}>Get Started</Text>
         </TouchableOpacity>
       </TourStep>
 
       {/* Additional info */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>
-          The tour highlights each TourStep component in sequence, showing a
-          spotlight overlay and tooltip with navigation controls.
-        </Text>
-      </View>
+      <TourStep id="info-text">
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoText}>
+            The tour highlights each TourStep component in sequence, showing a
+            spotlight overlay and tooltip with navigation controls.
+          </Text>
+        </View>
+      </TourStep>
+
+      {/* Completion Modal */}
+      <Modal
+        visible={showCompletionModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCompletionModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalEmoji}>🎉</Text>
+            <Text style={styles.modalTitle}>Tour Complete!</Text>
+            <Text style={styles.modalText}>
+              You've successfully completed the onboarding tour. You're now
+              ready to explore the app!
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowCompletionModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Awesome!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -149,6 +237,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    gap: 12,
+  },
+  toggleLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  toggleStatus: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+    minWidth: 30,
   },
   startButton: {
     margin: 20,
@@ -232,5 +342,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    maxWidth: 320,
+    width: '100%',
+  },
+  modalEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

@@ -10,12 +10,13 @@ import {
   useMemo,
   type RefObject,
 } from 'react';
-import { View } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import {
   IntroContext,
   initialIntroState,
   type IntroContextValue,
   type RegistryEntry,
+  type ScrollableRef,
 } from '../context/IntroContext';
 import { introReducer } from '../context/reducer';
 import { measureElement } from '../hooks/useMeasure';
@@ -63,6 +64,9 @@ export function IntroProvider({
   // Callbacks refs
   const tourCallbacksRef = useRef<TourCallbacks>({});
   const hintCallbacksRef = useRef<HintCallbacks>({});
+
+  // ScrollView ref for auto-scrolling
+  const scrollViewRef = useRef<RefObject<ScrollableRef | null> | null>(null);
 
   // Storage adapter
   const storageAdapter = useMemo(
@@ -168,6 +172,59 @@ export function IntroProvider({
     await Promise.all(measurePromises);
   }, [state.registry.steps]);
 
+  // Scroll methods
+  const registerScrollView = useCallback(
+    (ref: RefObject<ScrollableRef | null>) => {
+      scrollViewRef.current = ref;
+    },
+    []
+  );
+
+  const unregisterScrollView = useCallback(() => {
+    scrollViewRef.current = null;
+  }, []);
+
+  const scrollToElementById = useCallback(
+    async (id: string): Promise<void> => {
+      const scrollRef = scrollViewRef.current;
+      if (!scrollRef?.current) return;
+
+      const stepEntry = state.registry.steps.get(id);
+      if (!stepEntry?.ref.current) return;
+
+      const screenHeight = Dimensions.get('window').height;
+      const scrollPadding = state.tour.options.scrollPadding ?? 50;
+
+      try {
+        // Measure the element
+        const measurement = await measureElement(stepEntry.ref);
+
+        // Check if element is within visible screen bounds
+        const isAboveScreen = measurement.y < scrollPadding;
+        const isBelowScreen =
+          measurement.y + measurement.height > screenHeight - scrollPadding;
+
+        if (isAboveScreen || isBelowScreen) {
+          // Calculate the target scroll position to center the element
+          // We need to estimate based on current element position
+          scrollRef.current.scrollTo({
+            y: Math.max(
+              0,
+              measurement.y - screenHeight / 2 + measurement.height / 2
+            ),
+            animated: true,
+          });
+
+          // Wait for scroll animation to complete, then re-measure
+          await new Promise((resolve) => setTimeout(resolve, 350));
+        }
+      } catch {
+        // Ignore scroll errors
+      }
+    },
+    [state.registry.steps, state.tour.options.scrollPadding]
+  );
+
   // Callback setters
   const setTourCallbacks = useCallback((callbacks: TourCallbacks) => {
     tourCallbacksRef.current = callbacks;
@@ -188,6 +245,9 @@ export function IntroProvider({
       unregisterHint,
       measureElement: measureElementById,
       measureAllSteps,
+      registerScrollView,
+      unregisterScrollView,
+      scrollToElement: scrollToElementById,
       tourCallbacks: tourCallbacksRef.current,
       setTourCallbacks,
       hintCallbacks: hintCallbacksRef.current,
@@ -201,6 +261,9 @@ export function IntroProvider({
       unregisterHint,
       measureElementById,
       measureAllSteps,
+      registerScrollView,
+      unregisterScrollView,
+      scrollToElementById,
       setTourCallbacks,
       setHintCallbacks,
     ]

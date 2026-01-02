@@ -115,11 +115,22 @@ export function calculateTooltipPosition(
 ): PositionResult {
   const screen = getScreenDimensions();
 
-  // Priority order based on preferred position
-  const positions: Exclude<TooltipPosition, 'auto'>[] =
-    preferredPosition !== 'auto'
-      ? [preferredPosition, 'bottom', 'top', 'right', 'left']
-      : ['bottom', 'top', 'right', 'left'];
+  // For 'auto' mode, determine best priority based on target position
+  // If target is in bottom half of screen, prefer 'top' first
+  const targetCenterY = target.y + target.height / 2;
+  const isTargetInBottomHalf = targetCenterY > screen.height / 2;
+
+  // Priority order based on preferred position and target location
+  let positions: Exclude<TooltipPosition, 'auto'>[];
+  if (preferredPosition !== 'auto') {
+    positions = [preferredPosition, 'bottom', 'top', 'right', 'left'];
+  } else if (isTargetInBottomHalf) {
+    // Target is in bottom half - prefer top positioning
+    positions = ['top', 'bottom', 'left', 'right'];
+  } else {
+    // Target is in top half - prefer bottom positioning
+    positions = ['bottom', 'top', 'right', 'left'];
+  }
 
   // Remove duplicates
   const uniquePositions = [...new Set(positions)];
@@ -132,7 +143,7 @@ export function calculateTooltipPosition(
     }
   }
 
-  // Fallback: position at bottom, clamped to screen
+  // Fallback: smart positioning that avoids overlapping the target
   const x = Math.max(
     padding,
     Math.min(
@@ -140,15 +151,37 @@ export function calculateTooltipPosition(
       screen.width - padding - tooltip.width
     )
   );
-  const y = Math.min(
-    target.y + target.height + DEFAULT_GAP,
+
+  // Calculate both possible Y positions
+  const bottomY = target.y + target.height + DEFAULT_GAP;
+  const topY = target.y - tooltip.height - DEFAULT_GAP;
+
+  // Check if bottom position would overlap the target
+  const bottomYClamped = Math.min(
+    bottomY,
     screen.height - padding - tooltip.height
   );
+  const wouldOverlapIfBottom = bottomYClamped < target.y + target.height;
+
+  // Check if top position is valid (not above screen)
+  const topYClamped = Math.max(padding, topY);
+  const wouldOverlapIfTop =
+    topYClamped + tooltip.height > target.y && topYClamped < target.y;
+
+  // Prefer top if bottom would overlap, otherwise use bottom
+  if (wouldOverlapIfBottom && !wouldOverlapIfTop && topYClamped >= padding) {
+    return {
+      position: 'top',
+      x,
+      y: topYClamped,
+      arrowPosition: 'bottom',
+    };
+  }
 
   return {
     position: 'bottom',
     x,
-    y,
+    y: bottomYClamped,
     arrowPosition: 'top',
   };
 }

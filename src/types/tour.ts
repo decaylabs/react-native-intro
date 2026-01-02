@@ -38,6 +38,9 @@ export interface StepConfig {
   /** Prevent user interaction with highlighted element */
   disableInteraction?: boolean;
 
+  /** Hide navigation buttons for this step (useful for interactive elements) */
+  hideButtons?: boolean;
+
   /** Custom styles for this step's tooltip */
   tooltipStyle?: ViewStyle;
 

@@ -4,6 +4,14 @@
 
 import { createContext, type RefObject } from 'react';
 import type { View } from 'react-native';
+
+/**
+ * ScrollView-like interface for scroll registration
+ * Using a minimal interface to support both RN ScrollView and FlatList
+ */
+export interface ScrollableRef {
+  scrollTo: (options: { x?: number; y?: number; animated?: boolean }) => void;
+}
 import type {
   TourState,
   StepConfig,
@@ -80,6 +88,7 @@ export const defaultTourOptions: TourOptions = {
   scrollToElement: true,
   scrollPadding: 50,
   overlayOpacity: 0.75,
+  animate: 'auto',
   animationDuration: 300,
 };
 
@@ -147,6 +156,11 @@ export interface IntroContextValue {
   measureElement: (id: string) => Promise<ElementMeasurement | null>;
   measureAllSteps: () => Promise<void>;
 
+  // Scroll methods
+  registerScrollView: (ref: RefObject<ScrollableRef | null>) => void;
+  unregisterScrollView: () => void;
+  scrollToElement: (id: string) => Promise<void>;
+
   // Callbacks
   tourCallbacks: TourCallbacks;
   setTourCallbacks: (callbacks: TourCallbacks) => void;
@@ -170,6 +184,7 @@ export type IntroAction =
   | { type: 'GO_TO_STEP'; stepIndex: number }
   | { type: 'END_TOUR'; reason: 'completed' | 'skipped' | 'dismissed' }
   | { type: 'SET_TRANSITIONING'; isTransitioning: boolean }
+  | { type: 'SHOW_TOOLTIP' }
   // Hint actions
   | { type: 'SHOW_HINTS'; hints: HintConfig[]; options?: HintOptions }
   | { type: 'HIDE_HINTS' }
