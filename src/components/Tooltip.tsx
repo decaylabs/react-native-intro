@@ -2,7 +2,7 @@
  * Tooltip - Positioned tooltip displaying step content and navigation
  */
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Dimensions,
   type ViewStyle,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { useIntroContext } from '../context/useIntroContext';
 import { calculateTooltipPosition } from '../utils/positioning';
@@ -48,11 +49,25 @@ export function Tooltip({
 }: TooltipProps) {
   const { dispatch, tourCallbacks, state } = useIntroContext();
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
+  const [hasMeasured, setHasMeasured] = useState(false);
 
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === totalSteps - 1;
 
-  // Calculate tooltip position
+  // Reset measurement state when step changes
+  useEffect(() => {
+    setHasMeasured(false);
+  }, [stepIndex]);
+
+  // Handle tooltip layout to get actual size
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setTooltipSize({ width, height });
+    setHasMeasured(true);
+  }, []);
+
+  // Calculate tooltip position based on actual measured size
   const tooltipPosition = useMemo(() => {
     const preferredPosition: TooltipPosition = step.position ?? 'auto';
 
@@ -66,12 +81,19 @@ export function Tooltip({
       timestamp: Date.now(),
     };
 
-    return calculateTooltipPosition(
-      measurement,
-      { width: theme.tooltip.maxWidth, height: 200 }, // Estimated tooltip size
-      preferredPosition
-    );
-  }, [targetMeasurement, step.position, theme.tooltip.maxWidth]);
+    // Use actual measured size if available, otherwise estimate
+    const actualSize = hasMeasured
+      ? tooltipSize
+      : { width: theme.tooltip.maxWidth, height: 250 }; // Better initial estimate
+
+    return calculateTooltipPosition(measurement, actualSize, preferredPosition);
+  }, [
+    targetMeasurement,
+    step.position,
+    theme.tooltip.maxWidth,
+    tooltipSize,
+    hasMeasured,
+  ]);
 
   // Navigation handlers
   const handleNext = useCallback(async () => {
@@ -207,7 +229,7 @@ export function Tooltip({
   };
 
   return (
-    <View style={tooltipStyle}>
+    <View style={tooltipStyle} onLayout={handleLayout}>
       {/* Title */}
       {step.title && (
         <Text
@@ -317,7 +339,7 @@ export function Tooltip({
       )}
 
       {/* Navigation buttons */}
-      {options.showButtons && (
+      {options.showButtons && !step.hideButtons && (
         <View style={styles.buttonsContainer}>
           {/* Skip button (always visible except on last step) */}
           {!isLastStep && (

@@ -35,8 +35,8 @@ export function introReducer(
         ui: {
           ...state.ui,
           overlayVisible: true,
-          tooltipVisible: true,
-          isTransitioning: false,
+          tooltipVisible: false,
+          isTransitioning: true,
         },
       };
     }
@@ -67,6 +67,11 @@ export function introReducer(
           ...state.tour,
           currentStepIndex: nextIndex,
         },
+        ui: {
+          ...state.ui,
+          tooltipVisible: false,
+          isTransitioning: true,
+        },
       };
     }
 
@@ -79,6 +84,11 @@ export function introReducer(
         tour: {
           ...state.tour,
           currentStepIndex: prevIndex,
+        },
+        ui: {
+          ...state.ui,
+          tooltipVisible: false,
+          isTransitioning: true,
         },
       };
     }
@@ -122,6 +132,17 @@ export function introReducer(
         ui: {
           ...state.ui,
           isTransitioning: action.isTransitioning,
+        },
+      };
+    }
+
+    case 'SHOW_TOOLTIP': {
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          tooltipVisible: true,
+          isTransitioning: false,
         },
       };
     }

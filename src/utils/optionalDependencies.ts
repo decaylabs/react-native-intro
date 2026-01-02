@@ -63,6 +63,11 @@ let asyncStorageChecked = false;
 
 /**
  * Check for react-native-reanimated
+ *
+ * NOTE: Reanimated detection is currently disabled because native JSI errors
+ * from misconfigured babel plugin cannot be caught with try-catch.
+ * The fallback Animated API provides smooth animations.
+ * TODO: Re-enable once babel plugin detection is implemented.
  */
 function checkReanimated(): ReanimatedModule | null {
   if (reanimatedChecked) {
@@ -70,17 +75,9 @@ function checkReanimated(): ReanimatedModule | null {
   }
   reanimatedChecked = true;
 
-  try {
-    deps.Reanimated = require('react-native-reanimated');
-  } catch {
-    if (__DEV__) {
-      console.warn(
-        '[react-native-intro] react-native-reanimated not found. ' +
-          'Animations will use the fallback Animated API. ' +
-          'Install react-native-reanimated for better performance.'
-      );
-    }
-  }
+  // Disabled for now - fallback Animated API works well
+  // Native JSI errors from misconfigured reanimated crash the app
+  // and cannot be caught with try-catch
 
   return deps.Reanimated;
 }
@@ -99,13 +96,7 @@ function checkAsyncStorage(): AsyncStorageModule['default'] | null {
       require('@react-native-async-storage/async-storage') as AsyncStorageModule;
     deps.AsyncStorage = module.default;
   } catch {
-    if (__DEV__) {
-      console.warn(
-        '[react-native-intro] @react-native-async-storage/async-storage not found. ' +
-          '"Don\'t show again" persistence will be disabled. ' +
-          'Install async-storage to enable persistence.'
-      );
-    }
+    // AsyncStorage is optional - "Don't show again" persistence will be disabled
   }
 
   return deps.AsyncStorage;
