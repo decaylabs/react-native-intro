@@ -1,13 +1,13 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'react-native-intro';
-
-const result = multiply(3, 7);
+import { IntroProvider } from 'react-native-intro';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
+    <IntroProvider>
+      <View style={styles.container}>
+        <Text>React Native Intro Example</Text>
+      </View>
+    </IntroProvider>
   );
 }
 
