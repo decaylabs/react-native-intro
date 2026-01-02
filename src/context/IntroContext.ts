@@ -2,16 +2,8 @@
  * IntroContext - Core context for tour and hint state management
  */
 
-import { createContext, type RefObject } from 'react';
-import type { View } from 'react-native';
-
-/**
- * ScrollView-like interface for scroll registration
- * Using a minimal interface to support both RN ScrollView and FlatList
- */
-export interface ScrollableRef {
-  scrollTo: (options: { x?: number; y?: number; animated?: boolean }) => void;
-}
+import { createContext, type RefObject, type ReactNode } from 'react';
+import type { View, ViewStyle, TextStyle } from 'react-native';
 import type {
   TourState,
   StepConfig,
@@ -21,7 +13,43 @@ import type {
   ElementMeasurement,
   TourCallbacks,
   HintCallbacks,
+  TooltipPosition,
+  HintPosition,
+  HintType,
 } from '../types';
+
+/**
+ * ScrollView-like interface for scroll registration
+ * Using a minimal interface to support both RN ScrollView and FlatList
+ */
+export interface ScrollableRef {
+  scrollTo: (options: { x?: number; y?: number; animated?: boolean }) => void;
+}
+
+/**
+ * Props-based configuration for tour steps
+ */
+export interface StepPropsConfig {
+  intro?: string | ReactNode;
+  title?: string;
+  position?: TooltipPosition;
+  disableInteraction?: boolean;
+  group?: string;
+  tooltipStyle?: ViewStyle;
+  tooltipTextStyle?: TextStyle;
+}
+
+/**
+ * Props-based configuration for hints
+ */
+export interface HintPropsConfig {
+  hint?: string | ReactNode;
+  hintPosition?: HintPosition;
+  hintAnimation?: boolean;
+  hintType?: HintType;
+  indicatorStyle?: ViewStyle;
+  tooltipStyle?: ViewStyle;
+}
 
 /**
  * Registry entry for a registered element
@@ -29,6 +57,8 @@ import type {
 export interface RegistryEntry {
   ref: RefObject<View | null>;
   order: number;
+  /** Props-based configuration (for TourStep or HintSpot) */
+  props?: StepPropsConfig | HintPropsConfig;
 }
 
 /**
@@ -146,10 +176,15 @@ export interface IntroContextValue {
   registerStep: (
     id: string,
     ref: RefObject<View | null>,
-    order?: number
+    order?: number,
+    props?: StepPropsConfig
   ) => void;
   unregisterStep: (id: string) => void;
-  registerHint: (id: string, ref: RefObject<View | null>) => void;
+  registerHint: (
+    id: string,
+    ref: RefObject<View | null>,
+    props?: HintPropsConfig
+  ) => void;
   unregisterHint: (id: string) => void;
 
   // Measurement methods

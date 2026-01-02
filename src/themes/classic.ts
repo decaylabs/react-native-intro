@@ -52,12 +52,35 @@ export const classicTheme: Theme = {
   },
 
   hint: {
-    backgroundColor: '#3498db',
-    pulseColor: 'rgba(52, 152, 219, 0.4)',
+    // Default: muted gray
+    backgroundColor: '#9CA3AF',
+    pulseColor: 'rgba(156, 163, 175, 0.4)',
     size: 20,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#ffffff',
+    types: {
+      info: {
+        backgroundColor: '#3B82F6',
+        pulseColor: 'rgba(59, 130, 246, 0.4)',
+        icon: 'ℹ️',
+      },
+      warning: {
+        backgroundColor: '#F59E0B',
+        pulseColor: 'rgba(245, 158, 11, 0.4)',
+        icon: '⚠️',
+      },
+      error: {
+        backgroundColor: '#EF4444',
+        pulseColor: 'rgba(239, 68, 68, 0.4)',
+        icon: '❌',
+      },
+      success: {
+        backgroundColor: '#10B981',
+        pulseColor: 'rgba(16, 185, 129, 0.4)',
+        icon: '✓',
+      },
+    },
   },
 
   progress: {

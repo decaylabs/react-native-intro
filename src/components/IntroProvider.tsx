@@ -17,6 +17,8 @@ import {
   type IntroContextValue,
   type RegistryEntry,
   type ScrollableRef,
+  type StepPropsConfig,
+  type HintPropsConfig,
 } from '../context/IntroContext';
 import { introReducer } from '../context/reducer';
 import { measureElement } from '../hooks/useMeasure';
@@ -107,8 +109,13 @@ export function IntroProvider({
 
   // Registry methods
   const registerStep = useCallback(
-    (id: string, ref: RefObject<View | null>, order: number = 0) => {
-      state.registry.steps.set(id, { ref, order });
+    (
+      id: string,
+      ref: RefObject<View | null>,
+      order: number = 0,
+      props?: StepPropsConfig
+    ) => {
+      state.registry.steps.set(id, { ref, order, props });
     },
     [state.registry.steps]
   );
@@ -121,8 +128,8 @@ export function IntroProvider({
   );
 
   const registerHint = useCallback(
-    (id: string, ref: RefObject<View | null>) => {
-      state.registry.hints.set(id, { ref, order: 0 });
+    (id: string, ref: RefObject<View | null>, props?: HintPropsConfig) => {
+      state.registry.hints.set(id, { ref, order: 0, props });
     },
     [state.registry.hints]
   );

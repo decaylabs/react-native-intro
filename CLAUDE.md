@@ -39,23 +39,46 @@ yarn release
 
 ## Architecture
 
-### Core Components (to be implemented in src/)
+### Core Components (in src/)
 
 | Component | Purpose |
 |-----------|---------|
 | `IntroProvider` | Context provider that wraps the app and manages tour/hint state |
-| `TourStep` | Wrapper component that registers child elements as tour steps |
-| `HintSpot` | Component that registers hint anchor points on elements |
+| `TourStep` | Wrapper component that registers elements as tour steps (supports props-based config) |
+| `HintSpot` | Wrapper component that registers hint anchor points (supports props-based config) |
 | `TourOverlay` | Full-screen overlay with spotlight cutout around active step |
 | `Tooltip` | Positioned tooltip displaying step content |
 | `HintBubble` | Pulsing hint indicator and popup dialog |
-| `useIntro` | Hook for programmatic tour/hint control |
+| `useTour` | Hook for tour-specific control |
+| `useHints` | Hook for hint-specific control |
+| `useIntro` | Combined hook for both tours and hints |
 
 ### Key Design Decisions
 
+- **Props-based configuration**: TourStep and HintSpot support defining content via props (recommended) or programmatically
 - **Measure-based positioning**: Uses React Native's `measure()` API to position overlays and tooltips relative to target elements
 - **Context-driven state**: All tour/hint state flows through `IntroProvider` context
 - **Optional dependencies**: Falls back gracefully when react-native-reanimated or async-storage aren't installed
+
+### API Patterns
+
+Both TourStep and HintSpot support two usage patterns:
+
+1. **Props-based (recommended)**: Define content via component props
+   ```tsx
+   <TourStep id="welcome" order={1} intro="Welcome!" title="Hello">
+     <Button />
+   </TourStep>
+   tour.start(); // Uses props from all registered TourSteps
+   ```
+
+2. **Programmatic**: Pass explicit configuration to hooks
+   ```tsx
+   <TourStep id="welcome">
+     <Button />
+   </TourStep>
+   tour.start('tour-id', [{ id: 'step-1', targetId: 'welcome', content: '...' }]);
+   ```
 
 ### Monorepo Structure
 

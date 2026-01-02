@@ -46,7 +46,9 @@ describe('introReducer - Tour Actions', () => {
       expect(state.tour.currentStepIndex).toBe(0);
       expect(state.tour.steps).toHaveLength(2);
       expect(state.ui.overlayVisible).toBe(true);
-      expect(state.ui.tooltipVisible).toBe(true);
+      // tooltipVisible starts false during transition, set to true via SHOW_TOOLTIP action
+      expect(state.ui.tooltipVisible).toBe(false);
+      expect(state.ui.isTransitioning).toBe(true);
     });
 
     it('should apply provided tour options', () => {
@@ -279,6 +281,204 @@ describe('introReducer - Tour Actions', () => {
       });
 
       expect(state.persistence.dismissedTours.has('my-tour')).toBe(false);
+    });
+  });
+});
+
+describe('introReducer - Hint Actions', () => {
+  let initialState: IntroState;
+
+  beforeEach(() => {
+    initialState = {
+      ...initialIntroState,
+      registry: {
+        steps: new Map(),
+        hints: new Map(),
+      },
+      measurements: new Map(),
+      persistence: {
+        dismissedTours: new Set(),
+        initialized: true,
+      },
+    };
+  });
+
+  describe('SHOW_HINTS', () => {
+    it('should show hints with provided configuration', () => {
+      const hints = [
+        { id: 'hint-1', targetId: 'target-1', content: 'First hint' },
+        { id: 'hint-2', targetId: 'target-2', content: 'Second hint' },
+      ];
+
+      const state = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints,
+      });
+
+      expect(state.hints.visible).toBe(true);
+      expect(state.hints.items).toHaveLength(2);
+      expect(state.hints.items[0]?.id).toBe('hint-1');
+      expect(state.hints.activeHintId).toBeNull();
+    });
+
+    it('should apply provided hint options', () => {
+      const state = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints: [{ id: 'hint-1', targetId: 'target-1', content: 'Hint' }],
+        options: {
+          animation: false,
+          indicatorSize: 30,
+        },
+      });
+
+      expect(state.hints.options.animation).toBe(false);
+      expect(state.hints.options.indicatorSize).toBe(30);
+    });
+  });
+
+  describe('HIDE_HINTS', () => {
+    beforeEach(() => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints: [{ id: 'hint-1', targetId: 'target-1', content: 'Hint' }],
+      });
+    });
+
+    it('should hide all hints', () => {
+      const state = introReducer(initialState, { type: 'HIDE_HINTS' });
+
+      expect(state.hints.visible).toBe(false);
+      expect(state.hints.activeHintId).toBeNull();
+    });
+
+    it('should clear active hint when hiding', () => {
+      // First show a hint
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+      expect(initialState.hints.activeHintId).toBe('hint-1');
+
+      // Then hide all hints
+      const state = introReducer(initialState, { type: 'HIDE_HINTS' });
+
+      expect(state.hints.activeHintId).toBeNull();
+    });
+  });
+
+  describe('SHOW_HINT', () => {
+    beforeEach(() => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints: [
+          { id: 'hint-1', targetId: 'target-1', content: 'First' },
+          { id: 'hint-2', targetId: 'target-2', content: 'Second' },
+        ],
+      });
+    });
+
+    it('should set active hint ID', () => {
+      const state = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+
+      expect(state.hints.activeHintId).toBe('hint-1');
+    });
+
+    it('should switch active hint', () => {
+      let state = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+      expect(state.hints.activeHintId).toBe('hint-1');
+
+      state = introReducer(state, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-2',
+      });
+      expect(state.hints.activeHintId).toBe('hint-2');
+    });
+  });
+
+  describe('HIDE_HINT', () => {
+    beforeEach(() => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints: [{ id: 'hint-1', targetId: 'target-1', content: 'Hint' }],
+      });
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+    });
+
+    it('should clear active hint ID', () => {
+      const state = introReducer(initialState, {
+        type: 'HIDE_HINT',
+        hintId: 'hint-1',
+      });
+
+      expect(state.hints.activeHintId).toBeNull();
+    });
+
+    it('should not clear active hint if different hint is hidden', () => {
+      const state = introReducer(initialState, {
+        type: 'HIDE_HINT',
+        hintId: 'hint-2', // Different hint
+      });
+
+      expect(state.hints.activeHintId).toBe('hint-1');
+    });
+  });
+
+  describe('REMOVE_HINT', () => {
+    beforeEach(() => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINTS',
+        hints: [
+          { id: 'hint-1', targetId: 'target-1', content: 'First' },
+          { id: 'hint-2', targetId: 'target-2', content: 'Second' },
+        ],
+      });
+    });
+
+    it('should remove a hint from items', () => {
+      const state = introReducer(initialState, {
+        type: 'REMOVE_HINT',
+        hintId: 'hint-1',
+      });
+
+      expect(state.hints.items).toHaveLength(1);
+      expect(state.hints.items[0]?.id).toBe('hint-2');
+    });
+
+    it('should clear active hint if removed hint was active', () => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+
+      const state = introReducer(initialState, {
+        type: 'REMOVE_HINT',
+        hintId: 'hint-1',
+      });
+
+      expect(state.hints.activeHintId).toBeNull();
+    });
+
+    it('should not affect active hint if different hint is removed', () => {
+      initialState = introReducer(initialState, {
+        type: 'SHOW_HINT',
+        hintId: 'hint-1',
+      });
+
+      const state = introReducer(initialState, {
+        type: 'REMOVE_HINT',
+        hintId: 'hint-2',
+      });
+
+      expect(state.hints.activeHintId).toBe('hint-1');
     });
   });
 });

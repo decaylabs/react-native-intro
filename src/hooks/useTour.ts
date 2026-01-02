@@ -7,6 +7,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useIntroContext } from '../context/useIntroContext';
+import type { StepPropsConfig } from '../context/IntroContext';
 import type {
   StepConfig,
   TourOptions,
@@ -76,11 +77,103 @@ export function useTour(): UseTourReturn {
   const { state, dispatch, measureAllSteps, setTourCallbacks, tourCallbacks } =
     useIntroContext();
 
-  // Start a tour
+  /**
+   * Build step configs from registered TourStep props
+   * Filters to steps with intro content and optionally a specific group
+   */
+  const buildStepsFromProps = useCallback(
+    (group?: string): StepConfig[] => {
+      const steps: Array<{
+        id: string;
+        order: number;
+        props: StepPropsConfig;
+      }> = [];
+
+      state.registry.steps.forEach((entry, id) => {
+        const props = entry.props as StepPropsConfig | undefined;
+
+        // Only include steps with intro content defined via props
+        if (!props?.intro) return;
+
+        // Filter by group if specified
+        if (group && props.group !== group) return;
+
+        steps.push({ id, order: entry.order, props });
+      });
+
+      // Sort by order
+      steps.sort((a, b) => a.order - b.order);
+
+      // Convert to StepConfig format
+      return steps.map((step, index) => ({
+        id: `step-${index + 1}`,
+        targetId: step.id,
+        content: step.props.intro!,
+        title: step.props.title,
+        position: step.props.position,
+        disableInteraction: step.props.disableInteraction,
+        tooltipStyle: step.props.tooltipStyle,
+        tooltipTextStyle: step.props.tooltipTextStyle,
+      }));
+    },
+    [state.registry.steps]
+  );
+
+  /**
+   * Start a tour
+   *
+   * Supports multiple calling patterns:
+   * - start() - props-based, default tour
+   * - start(options) - props-based with global options
+   * - start(tourId) - props-based for specific group
+   * - start(tourId, options) - props-based for group with options
+   * - start(tourId, steps) - programmatic with explicit steps
+   * - start(tourId, steps, options) - programmatic with steps and options
+   */
   const start = useCallback(
-    async (tourId: string, steps: StepConfig[], options?: TourOptions) => {
+    async (
+      tourIdOrOptions?: string | TourOptions,
+      stepsOrOptions?: StepConfig[] | TourOptions,
+      maybeOptions?: TourOptions
+    ) => {
+      // Detect calling pattern
+      let tourId: string = 'default';
+      let steps: StepConfig[] | undefined;
+      let options: TourOptions | undefined;
+
+      if (tourIdOrOptions === undefined) {
+        // start() - no args
+      } else if (typeof tourIdOrOptions === 'object') {
+        // start(options) - first arg is options object
+        options = tourIdOrOptions;
+      } else if (typeof tourIdOrOptions === 'string') {
+        // First arg is tour ID
+        tourId = tourIdOrOptions;
+
+        if (Array.isArray(stepsOrOptions)) {
+          // start(tourId, steps) or start(tourId, steps, options)
+          steps = stepsOrOptions;
+          options = maybeOptions;
+        } else if (stepsOrOptions && typeof stepsOrOptions === 'object') {
+          // start(tourId, options) - second arg is options
+          options = stepsOrOptions;
+        }
+      }
+
       // Check if tour is dismissed
       if (state.persistence.dismissedTours.has(tourId)) {
+        return;
+      }
+
+      // Build steps from props if not provided
+      const stepsToUse =
+        steps || buildStepsFromProps(tourId !== 'default' ? tourId : undefined);
+
+      if (stepsToUse.length === 0) {
+        console.warn(
+          `[react-native-intro] No steps found for tour "${tourId}". ` +
+            'Either pass steps to start() or define intro props on TourStep components.'
+        );
         return;
       }
 
@@ -91,7 +184,7 @@ export function useTour(): UseTourReturn {
       }
 
       // Start the tour
-      dispatch({ type: 'START_TOUR', tourId, steps, options });
+      dispatch({ type: 'START_TOUR', tourId, steps: stepsToUse, options });
 
       // Measure all step targets
       await measureAllSteps();
@@ -101,7 +194,13 @@ export function useTour(): UseTourReturn {
         tourCallbacks.onStart(tourId);
       }
     },
-    [state.persistence.dismissedTours, tourCallbacks, dispatch, measureAllSteps]
+    [
+      state.persistence.dismissedTours,
+      tourCallbacks,
+      dispatch,
+      measureAllSteps,
+      buildStepsFromProps,
+    ]
   );
 
   // Go to next step

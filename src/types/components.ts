@@ -3,10 +3,15 @@
  */
 
 import type { ReactNode, RefObject } from 'react';
-import type { View } from 'react-native';
+import type { View, ViewStyle, TextStyle } from 'react-native';
 import type { Theme, ThemeName } from '../themes/types';
 import type { TourOptions, HintOptions } from './options';
-import type { ElementMeasurement } from './positions';
+import type {
+  TooltipPosition,
+  HintPosition,
+  ElementMeasurement,
+} from './positions';
+import type { HintType } from './hint';
 
 /**
  * Storage adapter interface for persistence
@@ -42,6 +47,10 @@ export interface IntroProviderProps {
 
 /**
  * Props for TourStep wrapper component
+ *
+ * Supports two usage patterns:
+ * 1. Props-based: Define step config via props, then call tour.start()
+ * 2. Programmatic: Just use id, pass config to tour.start(steps)
  */
 export interface TourStepProps {
   /** Unique ID to reference this step target */
@@ -50,12 +59,37 @@ export interface TourStepProps {
   /** Child element to wrap */
   children: ReactNode;
 
-  /** Step order (lower = earlier, default: registration order) */
+  /** Step order (1-indexed, lower = earlier) */
   order?: number;
+
+  /** Step content - shown in tooltip body */
+  intro?: string | ReactNode;
+
+  /** Step title - shown in tooltip header */
+  title?: string;
+
+  /** Tooltip position relative to element */
+  position?: TooltipPosition;
+
+  /** Prevent user interaction with highlighted element */
+  disableInteraction?: boolean;
+
+  /** Tour group identifier (for multi-tour apps) */
+  group?: string;
+
+  /** Custom styles for this step's tooltip */
+  tooltipStyle?: ViewStyle;
+
+  /** Custom styles for this step's tooltip text */
+  tooltipTextStyle?: TextStyle;
 }
 
 /**
  * Props for HintSpot wrapper component
+ *
+ * Supports two usage patterns:
+ * 1. Props-based: Define hint config via props, then call hints.show()
+ * 2. Programmatic: Just use id, pass config to hints.show(configs)
  */
 export interface HintSpotProps {
   /** Unique ID to reference this hint target */
@@ -63,10 +97,65 @@ export interface HintSpotProps {
 
   /** Child element to wrap */
   children: ReactNode;
+
+  /** Hint content - shown in tooltip when indicator is tapped */
+  hint?: string | ReactNode;
+
+  /** Indicator position on the element */
+  hintPosition?: HintPosition;
+
+  /** Enable pulsing animation on indicator (default: true) */
+  hintAnimation?: boolean;
+
+  /** Hint type for semantic styling (info, warning, error, success) */
+  hintType?: HintType;
+
+  /** Custom styles for the hint indicator */
+  indicatorStyle?: ViewStyle;
+
+  /** Custom styles for the hint tooltip */
+  tooltipStyle?: ViewStyle;
 }
 
 /**
- * Internal registry entry
+ * Internal registry entry for TourStep
+ */
+export interface StepRegistryEntry {
+  ref: RefObject<View>;
+  order: number;
+  measurement: ElementMeasurement | null;
+  /** Props-based step configuration */
+  props?: {
+    intro?: string | ReactNode;
+    title?: string;
+    position?: TooltipPosition;
+    disableInteraction?: boolean;
+    group?: string;
+    tooltipStyle?: ViewStyle;
+    tooltipTextStyle?: TextStyle;
+  };
+}
+
+/**
+ * Internal registry entry for HintSpot
+ */
+export interface HintRegistryEntry {
+  ref: RefObject<View>;
+  order: number;
+  measurement: ElementMeasurement | null;
+  /** Props-based hint configuration */
+  props?: {
+    hint?: string | ReactNode;
+    hintPosition?: HintPosition;
+    hintAnimation?: boolean;
+    hintType?: HintType;
+    indicatorStyle?: ViewStyle;
+    tooltipStyle?: ViewStyle;
+  };
+}
+
+/**
+ * @deprecated Use StepRegistryEntry or HintRegistryEntry instead
  */
 export interface RegistryEntry {
   ref: RefObject<View>;

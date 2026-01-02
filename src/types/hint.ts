@@ -8,6 +8,11 @@ import type { HintPosition } from './positions';
 import type { HintOptions } from './options';
 
 /**
+ * Hint type for semantic styling
+ */
+export type HintType = 'default' | 'info' | 'warning' | 'error' | 'success';
+
+/**
  * Configuration for a hint
  */
 export interface HintConfig {
@@ -26,6 +31,9 @@ export interface HintConfig {
   /** Enable pulsing animation on indicator (default: true) */
   animation?: boolean;
 
+  /** Hint type for semantic styling (default, info, warning, error, success) */
+  type?: HintType;
+
   /** Custom styles for the hint indicator */
   indicatorStyle?: ViewStyle;
 
@@ -37,8 +45,19 @@ export interface HintConfig {
  * Hint control methods returned by useIntro/useHints hooks
  */
 export interface HintControls {
-  /** Show hints with the given configuration */
-  show: (hints: HintConfig[], options?: HintOptions) => void;
+  /**
+   * Show hints
+   *
+   * Supports multiple calling patterns:
+   * - show() - uses props from HintSpot components
+   * - show(options) - uses props with global options
+   * - show(hints) - uses explicit hint configs
+   * - show(hints, options) - uses explicit hints with options
+   */
+  show: (
+    hintsOrOptions?: HintConfig[] | HintOptions,
+    options?: HintOptions
+  ) => void;
 
   /** Hide all hints */
   hide: () => void;
