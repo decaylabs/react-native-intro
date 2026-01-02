@@ -16,6 +16,7 @@ A native React Native implementation of [intro.js](https://github.com/usablica/i
 - [Platform Support](#platform-support)
 - [Dependencies](#dependencies)
 - [Development Roadmap](#development-roadmap)
+- [Documentation References](#documentation-references)
 
 ---
 
@@ -693,6 +694,45 @@ react-native-intro/
 - [ ] Example app
 - [x] CI/CD setup
 - [ ] npm publish
+
+---
+
+## Documentation Reference
+
+https://github.com/usablica/intro.js
+https://introjs.com/docs
+
+Getting started docs:
+https://introjs.com/docs/getting-started/install
+https://introjs.com/docs/getting-started/start
+
+Tour docs:
+https://introjs.com/docs/tour/examples/async-await
+https://introjs.com/docs/tour/examples/confirm-before-exit
+https://introjs.com/docs/tour/examples/css-class
+https://introjs.com/docs/tour/examples/disable-interaction
+https://introjs.com/docs/tour/examples/dont-show-again
+https://introjs.com/docs/tour/examples/floating-tooltip
+https://introjs.com/docs/tour/examples/html-tooltip
+https://introjs.com/docs/tour/examples/json-config
+https://introjs.com/docs/tour/examples/progress-bar
+https://introjs.com/docs/tour/examples/rtl
+https://introjs.com/docs/tour/examples/scrollable-element
+https://introjs.com/docs/tour/examples/tooltip-positions
+https://introjs.com/docs/tour/examples/svg
+https://introjs.com/docs/tour/examples/hello-world
+https://introjs.com/docs/tour/examples/without-bullets
+https://introjs.com/docs/tour/examples/without-buttons
+
+Hints docs:
+https://introjs.com/docs/hints/examples/hello-world
+https://introjs.com/docs/api/classes/packages_hint_hint.Hint.html
+https://introjs.com/docs/api/modules/packages_hint_dataAttributes.html
+https://introjs.com/docs/api/interfaces/packages_hint_option.HintOptions.html
+
+Themes docs:
+https://introjs.com/docs/themes/install
+https://introjs.com/docs/themes/list
 
 ---
 
