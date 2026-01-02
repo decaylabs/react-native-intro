@@ -73,3 +73,10 @@ yarn release
 Uses conventional commits: `fix:`, `feat:`, `refactor:`, `docs:`, `test:`, `chore:`
 
 Pre-commit hooks (lefthook) enforce linting, type checking, and commit message format.
+
+## Active Technologies
+- TypeScript 5.9+ (strict mode) (001-rn-intro-library)
+- AsyncStorage for "Don't show again" preference (with custom adapter option) (001-rn-intro-library)
+
+## Recent Changes
+- 001-rn-intro-library: Added TypeScript 5.9+ (strict mode)
