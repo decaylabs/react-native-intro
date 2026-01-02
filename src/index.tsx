@@ -7,17 +7,41 @@
 
 // Components
 export { IntroProvider } from './components/IntroProvider';
+export { TourStep, TourStepRef } from './components/TourStep';
+export { TourOverlay } from './components/TourOverlay';
+export { Tooltip } from './components/Tooltip';
 
 // Hooks
 export { useIntro } from './hooks/useIntro';
+export { useTour } from './hooks/useTour';
 export {
   useMeasure,
   measureElement,
   measureElements,
 } from './hooks/useMeasure';
 
+// Context (for advanced usage)
+export { useIntroContext } from './context/useIntroContext';
+
+// Utils
+export {
+  validateTour,
+  validateStep,
+  validateHint,
+  validateHints,
+} from './utils/validation';
+export { calculateTooltipPosition } from './utils/positioning';
+
 // Themes
-export { classicTheme, themes, getTheme, mergeTheme } from './themes';
+export {
+  classicTheme,
+  modernTheme,
+  darkTheme,
+  themes,
+  getTheme,
+  mergeTheme,
+  resolveTheme,
+} from './themes';
 
 // Types
 export type {
