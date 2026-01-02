@@ -52,10 +52,20 @@ export interface StepConfig {
  * Tour control methods returned by useIntro/useTour hooks
  */
 export interface TourControls {
-  /** Start a tour with the given configuration */
+  /**
+   * Start a tour
+   *
+   * Supports multiple calling patterns:
+   * - start() - props-based, default tour
+   * - start(options) - props-based with global options
+   * - start(tourId) - props-based for specific group
+   * - start(tourId, options) - props-based for group with options
+   * - start(tourId, steps) - programmatic with explicit steps
+   * - start(tourId, steps, options) - programmatic with steps and options
+   */
   start: (
-    tourId: string,
-    steps: StepConfig[],
+    tourIdOrOptions?: string | import('./options').TourOptions,
+    stepsOrOptions?: StepConfig[] | import('./options').TourOptions,
     options?: import('./options').TourOptions
   ) => void;
 

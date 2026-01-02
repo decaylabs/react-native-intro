@@ -20,7 +20,7 @@ export type {
 } from './tour';
 
 // Hint types
-export type { HintConfig, HintControls, HintsState } from './hint';
+export type { HintConfig, HintControls, HintsState, HintType } from './hint';
 
 // Options types
 export type { ButtonLabels, TourOptions, HintOptions } from './options';
@@ -35,6 +35,8 @@ export type {
   TourStepProps,
   HintSpotProps,
   RegistryEntry,
+  StepRegistryEntry,
+  HintRegistryEntry,
 } from './components';
 
 // Theme types (re-exported from themes)

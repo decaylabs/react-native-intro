@@ -8,12 +8,15 @@
 // Components
 export { IntroProvider } from './components/IntroProvider';
 export { TourStep, TourStepRef } from './components/TourStep';
+export { HintSpot, HintSpotRef } from './components/HintSpot';
 export { TourOverlay } from './components/TourOverlay';
 export { Tooltip } from './components/Tooltip';
+export { HintBubble, HintIndicator } from './components/HintBubble';
 
 // Hooks
 export { useIntro } from './hooks/useIntro';
 export { useTour } from './hooks/useTour';
+export { useHints } from './hooks/useHints';
 export { useScrollView } from './hooks/useScrollView';
 export {
   useMeasure,
@@ -60,6 +63,7 @@ export type {
   HintConfig,
   HintControls,
   HintsState,
+  HintType,
   // Options types
   ButtonLabels,
   TourOptions,

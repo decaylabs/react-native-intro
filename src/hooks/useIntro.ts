@@ -3,7 +3,11 @@
  */
 
 import { useContext, useCallback, useMemo } from 'react';
-import { IntroContext } from '../context/IntroContext';
+import {
+  IntroContext,
+  type StepPropsConfig,
+  type HintPropsConfig,
+} from '../context/IntroContext';
 import type {
   StepConfig,
   HintConfig,
@@ -55,10 +59,83 @@ export function useIntro(): UseIntroReturn {
   // TOUR CONTROLS
   // =========================================================================
 
+  /**
+   * Build step configs from registered TourStep props
+   */
+  const buildStepsFromProps = useCallback(
+    (group?: string): StepConfig[] => {
+      const steps: Array<{
+        id: string;
+        order: number;
+        props: StepPropsConfig;
+      }> = [];
+
+      state.registry.steps.forEach((entry, id) => {
+        const props = entry.props as StepPropsConfig | undefined;
+        if (!props?.intro) return;
+        if (group && props.group !== group) return;
+        steps.push({ id, order: entry.order, props });
+      });
+
+      steps.sort((a, b) => a.order - b.order);
+
+      return steps.map((step, index) => ({
+        id: `step-${index + 1}`,
+        targetId: step.id,
+        content: step.props.intro!,
+        title: step.props.title,
+        position: step.props.position,
+        disableInteraction: step.props.disableInteraction,
+        tooltipStyle: step.props.tooltipStyle,
+        tooltipTextStyle: step.props.tooltipTextStyle,
+      }));
+    },
+    [state.registry.steps]
+  );
+
   const startTour = useCallback(
-    async (tourId: string, steps: StepConfig[], options?: TourOptions) => {
+    async (
+      tourIdOrOptions?: string | TourOptions,
+      stepsOrOptions?: StepConfig[] | TourOptions,
+      maybeOptions?: TourOptions
+    ) => {
+      // Detect calling pattern
+      let tourId: string = 'default';
+      let steps: StepConfig[] | undefined;
+      let options: TourOptions | undefined;
+
+      if (tourIdOrOptions === undefined) {
+        // start() - no args
+      } else if (typeof tourIdOrOptions === 'object') {
+        // start(options) - first arg is options object
+        options = tourIdOrOptions;
+      } else if (typeof tourIdOrOptions === 'string') {
+        // First arg is tour ID
+        tourId = tourIdOrOptions;
+
+        if (Array.isArray(stepsOrOptions)) {
+          // start(tourId, steps) or start(tourId, steps, options)
+          steps = stepsOrOptions;
+          options = maybeOptions;
+        } else if (stepsOrOptions && typeof stepsOrOptions === 'object') {
+          // start(tourId, options) - second arg is options
+          options = stepsOrOptions;
+        }
+      }
+
       // Check if tour is dismissed
       if (state.persistence.dismissedTours.has(tourId)) {
+        return;
+      }
+
+      // Build steps from props if not provided
+      const stepsToUse =
+        steps || buildStepsFromProps(tourId !== 'default' ? tourId : undefined);
+
+      if (stepsToUse.length === 0) {
+        console.warn(
+          `[react-native-intro] No steps found for tour "${tourId}".`
+        );
         return;
       }
 
@@ -70,7 +147,7 @@ export function useIntro(): UseIntroReturn {
       }
 
       // Start the tour
-      dispatch({ type: 'START_TOUR', tourId, steps, options });
+      dispatch({ type: 'START_TOUR', tourId, steps: stepsToUse, options });
 
       // Measure all step targets
       await measureAllSteps();
@@ -85,6 +162,7 @@ export function useIntro(): UseIntroReturn {
       context.tourCallbacks,
       dispatch,
       measureAllSteps,
+      buildStepsFromProps,
     ]
   );
 
@@ -234,16 +312,63 @@ export function useIntro(): UseIntroReturn {
   // HINT CONTROLS
   // =========================================================================
 
+  /**
+   * Build hint configs from registered HintSpot props
+   */
+  const buildHintsFromProps = useCallback((): HintConfig[] => {
+    const hints: HintConfig[] = [];
+
+    state.registry.hints.forEach((entry, id) => {
+      const props = entry.props as HintPropsConfig | undefined;
+      if (!props?.hint) return;
+
+      hints.push({
+        id: `hint-${id}`,
+        targetId: id,
+        content: props.hint,
+        position: props.hintPosition,
+        animation: props.hintAnimation,
+        type: props.hintType,
+        indicatorStyle: props.indicatorStyle,
+        tooltipStyle: props.tooltipStyle,
+      });
+    });
+
+    return hints;
+  }, [state.registry.hints]);
+
   const showHints = useCallback(
-    (hints: HintConfig[], options?: HintOptions) => {
-      dispatch({ type: 'SHOW_HINTS', hints, options });
+    (
+      hintsOrOptions?: HintConfig[] | HintOptions,
+      maybeOptions?: HintOptions
+    ) => {
+      // Detect calling pattern
+      let hints: HintConfig[] | undefined;
+      let options: HintOptions | undefined;
+
+      if (Array.isArray(hintsOrOptions)) {
+        hints = hintsOrOptions;
+        options = maybeOptions;
+      } else if (hintsOrOptions && typeof hintsOrOptions === 'object') {
+        hints = undefined;
+        options = hintsOrOptions;
+      }
+
+      const hintsToUse = hints || buildHintsFromProps();
+
+      if (hintsToUse.length === 0) {
+        console.warn('[react-native-intro] No hints found.');
+        return;
+      }
+
+      dispatch({ type: 'SHOW_HINTS', hints: hintsToUse, options });
 
       const callbacks = context.hintCallbacks;
       if (callbacks.onHintsShow) {
         callbacks.onHintsShow();
       }
     },
-    [context.hintCallbacks, dispatch]
+    [context.hintCallbacks, dispatch, buildHintsFromProps]
   );
 
   const hideHints = useCallback(() => {

@@ -40,42 +40,58 @@ export default function App() {
 
 ## Tours
 
-### Basic Tour
+### Basic Tour (Props-based)
 
-Wrap elements with `TourStep` and use the `useIntro` hook to control the tour:
+Wrap elements with `TourStep` and define step content via props:
 
 ```jsx
-import { TourStep, useIntro } from 'react-native-intro';
+import { TourStep, useTour } from 'react-native-intro';
 
 function HomeScreen() {
-  const intro = useIntro();
+  const tour = useTour();
 
   return (
     <View>
-      <TourStep step={1} intro="Welcome to the app!" title="Hello">
+      <TourStep id="welcome" order={1} intro="Welcome to the app!" title="Hello">
         <Text>My App</Text>
       </TourStep>
 
-      <TourStep step={2} intro="Tap here to view your profile">
+      <TourStep id="profile" order={2} intro="Tap here to view your profile">
         <Button title="Profile" onPress={() => {}} />
       </TourStep>
 
-      <TourStep step={3} intro="Access settings here" position="left">
+      <TourStep id="settings" order={3} intro="Access settings here" position="left">
         <Button title="Settings" onPress={() => {}} />
       </TourStep>
 
-      <Button title="Start Tour" onPress={() => intro.start()} />
+      <Button title="Start Tour" onPress={() => tour.start()} />
     </View>
   );
 }
+```
+
+### Programmatic Tour
+
+For dynamic tours or when content comes from a CMS:
+
+```jsx
+const tour = useTour();
+
+const startTour = () => {
+  tour.start('my-tour', [
+    { id: 'step-1', targetId: 'welcome', content: 'Welcome!' },
+    { id: 'step-2', targetId: 'profile', content: 'Your profile' },
+  ]);
+};
 ```
 
 ### TourStep Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `step` | `number` | required | Step order (1-indexed) |
-| `intro` | `string \| ReactNode` | required | Tooltip content |
+| `id` | `string` | required | Unique identifier |
+| `order` | `number` | `0` | Step order (lower = earlier) |
+| `intro` | `string \| ReactNode` | — | Tooltip content |
 | `title` | `string` | — | Tooltip title |
 | `position` | `TooltipPosition` | `'auto'` | Tooltip placement |
 | `disableInteraction` | `boolean` | `false` | Prevent touch on element |
@@ -123,17 +139,26 @@ Configure via `IntroProvider` or `intro.setOptions()`:
 ### Tour Methods
 
 ```jsx
-const intro = useIntro();
+const tour = useTour();
 
-intro.start();              // Start tour
-intro.start('onboarding');  // Start specific group
-intro.exit();               // Exit tour
-intro.nextStep();           // Go to next step
-intro.previousStep();       // Go to previous step
-intro.goToStep(3);          // Go to specific step
-intro.isActive();           // Check if tour is active
-intro.currentStep();        // Get current step number
-intro.setDontShowAgain(true); // Set don't show again
+// Props-based (recommended)
+tour.start();                         // Start default tour
+tour.start({ showProgress: true });   // Start with options
+tour.start('group-name');             // Start tour for specific group
+tour.start('group', { exitOnOverlayClick: false }); // Group with options
+
+// Programmatic (for dynamic content)
+tour.start('id', steps);              // Start tour with explicit steps
+tour.start('id', steps, options);     // With steps and options
+
+// Navigation
+tour.next();                // Go to next step
+tour.prev();                // Go to previous step
+tour.goTo(2);               // Go to specific step index
+tour.stop();                // Stop the tour
+tour.restart();             // Restart from beginning
+tour.isDismissed('tour-id'); // Check if tour was dismissed
+tour.clearDismissed('id');  // Clear dismissed state
 ```
 
 ### Tour Callbacks
@@ -151,58 +176,78 @@ intro.setDontShowAgain(true); // Set don't show again
 
 ## Hints
 
-### Basic Hints
+### Basic Hints (Props-based)
 
-Wrap elements with `HintSpot`:
+Wrap elements with `HintSpot` and define hint content via props:
 
 ```jsx
-import { HintSpot, useIntro } from 'react-native-intro';
+import { HintSpot, useHints } from 'react-native-intro';
 
 function Dashboard() {
-  const intro = useIntro();
-
-  useEffect(() => {
-    intro.showHints();
-  }, []);
+  const hints = useHints();
 
   return (
     <View>
-      <HintSpot hint="New messages appear here" hintPosition="bottom-right">
+      <HintSpot id="inbox" hint="New messages appear here" hintPosition="bottom-right">
         <InboxIcon />
       </HintSpot>
 
-      <HintSpot hint="Track your daily progress" hintPosition="top-middle">
+      <HintSpot id="progress" hint="Track your daily progress" hintPosition="top-center" hintType="info">
         <ProgressChart />
       </HintSpot>
+
+      <Button title="Show Hints" onPress={() => hints.show()} />
     </View>
   );
 }
+```
+
+### Programmatic Hints
+
+For dynamic hints or when content comes from a CMS:
+
+```jsx
+const hints = useHints();
+
+hints.show([
+  { id: 'hint-1', targetId: 'inbox', content: 'New messages!', type: 'info' },
+  { id: 'hint-2', targetId: 'progress', content: 'Track progress', position: 'top-center' },
+]);
 ```
 
 ### HintSpot Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `hint` | `string \| ReactNode` | required | Hint content |
-| `hintPosition` | `HintPosition` | `'top-middle'` | Indicator position |
+| `id` | `string` | required | Unique identifier |
+| `hint` | `string \| ReactNode` | — | Hint content |
+| `hintPosition` | `HintPosition` | `'top-right'` | Indicator position |
 | `hintAnimation` | `boolean` | `true` | Pulsing animation |
-| `hintButtonLabel` | `string` | `'Got it'` | Dismiss button text |
-| `hintShowButton` | `boolean` | `true` | Show dismiss button |
+| `hintType` | `HintType` | `'default'` | Type: `default`, `info`, `warning`, `error`, `success` |
 
 ### Hint Positions
 
-`top-left`, `top-middle`, `top-right`, `middle-left`, `middle-middle`, `middle-right`, `bottom-left`, `bottom-middle`, `bottom-right`
+`top-left`, `top-center`, `top-right`, `middle-left`, `middle-center`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right`
 
 ### Hint Methods
 
 ```jsx
-const intro = useIntro();
+const hints = useHints();
 
-intro.showHints();          // Show all hints
-intro.hideHints();          // Hide all hints
-intro.showHint(0);          // Show specific hint
-intro.hideHint(0);          // Hide specific hint
-intro.showHintDialog(0);    // Show hint popup
+// Props-based (recommended)
+hints.show();                      // Show hints from HintSpot props
+hints.show({ animation: false });  // With global options
+hints.show({ closeOnOutsideClick: true }); // Options only
+
+// Programmatic (for dynamic content)
+hints.show(configs);               // Show hints with explicit config
+hints.show(configs, options);      // With configs and options
+
+// Control
+hints.hide();               // Hide all hints
+hints.showHint('hint-id');  // Show specific hint tooltip
+hints.hideHint('hint-id');  // Hide specific hint tooltip
+hints.removeHint('hint-id'); // Remove a hint entirely
 ```
 
 ### Hint Callbacks
@@ -256,18 +301,17 @@ Available: `default`, `modern`, `dark`, `nassau`, `royal`, `nazanin`
 
 ## Programmatic Steps
 
-Define steps without wrapping components:
+Define steps without using TourStep props:
 
 ```jsx
-const intro = useIntro();
+const tour = useTour();
 
-intro.addSteps([
-  { element: profileRef, intro: 'Your profile', step: 1 },
-  { element: settingsRef, intro: 'Settings here', step: 2 },
-  { intro: 'Welcome!', position: 'floating' }, // No element
+// Define steps programmatically
+tour.start('my-tour', [
+  { id: 'step-1', targetId: 'profile', content: 'Your profile', title: 'Profile' },
+  { id: 'step-2', targetId: 'settings', content: 'Settings here' },
+  { id: 'step-3', content: 'Welcome!', position: 'floating' }, // No element - floating tooltip
 ]);
-
-intro.start();
 ```
 
 ## Platform Support

@@ -2,7 +2,7 @@
  * TourStep - Wrapper component to register elements as tour step targets
  */
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 import { useIntroContext } from '../context/useIntroContext';
 import type { TourStepProps } from '../types';
@@ -11,27 +11,74 @@ import type { TourStepProps } from '../types';
  * TourStep wrapper component
  *
  * Wraps a child element to register it as a target for tour steps.
- * The wrapped element can then be referenced by its ID in tour step configurations.
+ * Supports two usage patterns:
+ *
+ * 1. Props-based: Define step content via props, then call tour.start()
+ * 2. Programmatic: Just use id, pass config to tour.start(steps)
  *
  * @example
  * ```tsx
- * <TourStep id="welcome-button" order={1}>
+ * // Props-based (recommended)
+ * <TourStep id="welcome" order={1} intro="Welcome to the app!" title="Hello">
  *   <Button title="Welcome" onPress={handleWelcome} />
  * </TourStep>
+ *
+ * // Then start the tour:
+ * tour.start(); // Uses props from registered TourSteps
+ *
+ * // Programmatic (legacy)
+ * <TourStep id="welcome">
+ *   <Button title="Welcome" />
+ * </TourStep>
+ * tour.start('tour-id', [{ id: 'step-1', targetId: 'welcome', content: '...' }]);
  * ```
  */
-export function TourStep({ id, children, order = 0 }: TourStepProps) {
+export function TourStep({
+  id,
+  children,
+  order = 0,
+  intro,
+  title,
+  position,
+  disableInteraction,
+  group,
+  tooltipStyle,
+  tooltipTextStyle,
+}: TourStepProps) {
   const viewRef = useRef<any>(null);
   const { registerStep, unregisterStep } = useIntroContext();
 
+  // Build props config object (only include defined values)
+  const propsConfig = useMemo(() => {
+    const config: Record<string, unknown> = {};
+    if (intro !== undefined) config.intro = intro;
+    if (title !== undefined) config.title = title;
+    if (position !== undefined) config.position = position;
+    if (disableInteraction !== undefined)
+      config.disableInteraction = disableInteraction;
+    if (group !== undefined) config.group = group;
+    if (tooltipStyle !== undefined) config.tooltipStyle = tooltipStyle;
+    if (tooltipTextStyle !== undefined)
+      config.tooltipTextStyle = tooltipTextStyle;
+    return Object.keys(config).length > 0 ? config : undefined;
+  }, [
+    intro,
+    title,
+    position,
+    disableInteraction,
+    group,
+    tooltipStyle,
+    tooltipTextStyle,
+  ]);
+
   // Register on mount, unregister on unmount
   useEffect(() => {
-    registerStep(id, viewRef, order);
+    registerStep(id, viewRef, order, propsConfig);
 
     return () => {
       unregisterStep(id);
     };
-  }, [id, order, registerStep, unregisterStep]);
+  }, [id, order, propsConfig, registerStep, unregisterStep]);
 
   // Wrap the child in a View to ensure we can measure it
   // collapsable={false} is required for accurate measurement on Android

@@ -44,6 +44,15 @@ export interface ButtonStyleConfig {
 }
 
 /**
+ * Hint type colors for semantic hints
+ */
+export interface HintTypeColors {
+  backgroundColor: string;
+  pulseColor: string;
+  icon: string;
+}
+
+/**
  * Hint indicator visual style
  */
 export interface HintStyleConfig {
@@ -53,6 +62,13 @@ export interface HintStyleConfig {
   borderRadius: number;
   borderWidth: number;
   borderColor: string;
+  /** Colors for different hint types */
+  types: {
+    info: HintTypeColors;
+    warning: HintTypeColors;
+    error: HintTypeColors;
+    success: HintTypeColors;
+  };
 }
 
 /**
