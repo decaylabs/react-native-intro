@@ -5,6 +5,24 @@
 import type { ViewStyle } from 'react-native';
 
 /**
+ * Directional padding configuration for scrolling
+ * Allows different padding values for each edge to account for
+ * fixed UI elements like headers, tab bars, etc.
+ */
+export interface DirectionalPadding {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+}
+
+/**
+ * Scroll padding can be a single number (applied to all edges)
+ * or directional values for specific edges
+ */
+export type ScrollPadding = number | DirectionalPadding;
+
+/**
  * Custom button labels for tour navigation
  */
 export interface ButtonLabels {
@@ -40,8 +58,17 @@ export interface TourOptions {
   /** Auto-scroll to off-screen elements (default: true) */
   scrollToElement?: boolean;
 
-  /** Padding when scrolling to element (default: 50) */
-  scrollPadding?: number;
+  /**
+   * Padding when scrolling to element (default: 50)
+   * Can be a single number for uniform padding, or an object for directional padding:
+   * @example
+   * // Uniform padding
+   * scrollPadding: 50
+   * @example
+   * // Directional padding (useful for tab bars, headers)
+   * scrollPadding: { top: 80, bottom: 100 }
+   */
+  scrollPadding?: ScrollPadding;
 
   /** Overlay opacity 0-1 (default: 0.75) */
   overlayOpacity?: number;

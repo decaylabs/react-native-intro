@@ -98,9 +98,9 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
       setDisplayedStep(currentStep);
       setDisplayedStepIndex(stepIndex);
 
-      // Step 3: Scroll to element
+      // Step 3: Scroll to element (default: true)
       setTransitionState('scrolling');
-      if (tour.options.scrollToElement) {
+      if (tour.options.scrollToElement !== false) {
         await scrollToElement(targetId);
       }
 

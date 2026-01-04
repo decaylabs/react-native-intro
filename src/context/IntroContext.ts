@@ -194,6 +194,7 @@ export interface IntroContextValue {
   // Scroll methods
   registerScrollView: (ref: RefObject<ScrollableRef | null>) => void;
   unregisterScrollView: () => void;
+  updateScrollOffset: (offset: { x: number; y: number }) => void;
   scrollToElement: (id: string) => Promise<void>;
 
   // Callbacks
