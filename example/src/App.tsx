@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   StyleSheet,
   StatusBar,
@@ -6,62 +6,87 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { IntroProvider } from 'react-native-intro';
+import {
+  SafeAreaView,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import { IntroProvider, type TourOptions } from 'react-native-intro';
 import { BasicTourScreen } from './screens/BasicTourScreen';
 import { HintsScreen } from './screens/HintsScreen';
 
 type TabName = 'tours' | 'hints';
 
-export default function App() {
+// Tab bar height (paddingVertical * 2 + icon + label + margins)
+const TAB_BAR_HEIGHT = 70;
+
+function AppContent() {
   const [activeTab, setActiveTab] = useState<TabName>('tours');
+  const insets = useSafeAreaInsets();
+
+  // Configure scroll padding to account for tab bar
+  const tourOptions: TourOptions = useMemo(
+    () => ({
+      scrollPadding: {
+        top: 50,
+        bottom: TAB_BAR_HEIGHT + insets.bottom,
+      },
+    }),
+    [insets.bottom]
+  );
 
   return (
+    <IntroProvider defaultTourOptions={tourOptions}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+
+        {/* Screen Content */}
+        <View style={styles.content}>
+          {activeTab === 'tours' && <BasicTourScreen />}
+          {activeTab === 'hints' && <HintsScreen />}
+        </View>
+
+        {/* Tab Bar */}
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'tours' && styles.tabActive]}
+            onPress={() => setActiveTab('tours')}
+          >
+            <Text style={styles.tabIcon}>🎯</Text>
+            <Text
+              style={[
+                styles.tabLabel,
+                activeTab === 'tours' && styles.tabLabelActive,
+              ]}
+            >
+              Tours
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'hints' && styles.tabActive]}
+            onPress={() => setActiveTab('hints')}
+          >
+            <Text style={styles.tabIcon}>💡</Text>
+            <Text
+              style={[
+                styles.tabLabel,
+                activeTab === 'hints' && styles.tabLabelActive,
+              ]}
+            >
+              Hints
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </IntroProvider>
+  );
+}
+
+export default function App() {
+  return (
     <SafeAreaProvider>
-      <IntroProvider>
-        <SafeAreaView style={styles.container}>
-          <StatusBar barStyle="dark-content" />
-
-          {/* Screen Content */}
-          <View style={styles.content}>
-            {activeTab === 'tours' && <BasicTourScreen />}
-            {activeTab === 'hints' && <HintsScreen />}
-          </View>
-
-          {/* Tab Bar */}
-          <View style={styles.tabBar}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 'tours' && styles.tabActive]}
-              onPress={() => setActiveTab('tours')}
-            >
-              <Text style={styles.tabIcon}>🎯</Text>
-              <Text
-                style={[
-                  styles.tabLabel,
-                  activeTab === 'tours' && styles.tabLabelActive,
-                ]}
-              >
-                Tours
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 'hints' && styles.tabActive]}
-              onPress={() => setActiveTab('hints')}
-            >
-              <Text style={styles.tabIcon}>💡</Text>
-              <Text
-                style={[
-                  styles.tabLabel,
-                  activeTab === 'hints' && styles.tabLabelActive,
-                ]}
-              >
-                Hints
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </IntroProvider>
+      <AppContent />
     </SafeAreaProvider>
   );
 }

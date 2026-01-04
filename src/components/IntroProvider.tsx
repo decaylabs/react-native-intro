@@ -10,7 +10,7 @@ import {
   useMemo,
   type RefObject,
 } from 'react';
-import { View, Dimensions } from 'react-native';
+import { View } from 'react-native';
 import {
   IntroContext,
   initialIntroState,
@@ -27,6 +27,7 @@ import {
   loadPersistedData,
   savePersistedData,
 } from '../utils/storage';
+import { scrollToElement as scrollToElementUtil } from '../utils/scrolling';
 import { TourOverlay } from './TourOverlay';
 import { classicTheme, modernTheme, darkTheme, resolveTheme } from '../themes';
 import type {
@@ -69,6 +70,9 @@ export function IntroProvider({
 
   // ScrollView ref for auto-scrolling
   const scrollViewRef = useRef<RefObject<ScrollableRef | null> | null>(null);
+
+  // Track current scroll offset for accurate scroll calculations
+  const scrollOffsetRef = useRef({ x: 0, y: 0 });
 
   // Storage adapter
   const storageAdapter = useMemo(
@@ -189,42 +193,40 @@ export function IntroProvider({
 
   const unregisterScrollView = useCallback(() => {
     scrollViewRef.current = null;
+    scrollOffsetRef.current = { x: 0, y: 0 };
+  }, []);
+
+  const updateScrollOffset = useCallback((offset: { x: number; y: number }) => {
+    scrollOffsetRef.current = offset;
   }, []);
 
   const scrollToElementById = useCallback(
     async (id: string): Promise<void> => {
       const scrollRef = scrollViewRef.current;
-      if (!scrollRef?.current) return;
+      if (!scrollRef) return;
 
       const stepEntry = state.registry.steps.get(id);
       if (!stepEntry?.ref.current) return;
 
-      const screenHeight = Dimensions.get('window').height;
-      const scrollPadding = state.tour.options.scrollPadding ?? 50;
+      // scrollPadding can be a number or DirectionalPadding object
+      const scrollPadding = state.tour.options.scrollPadding;
 
       try {
         // Measure the element
         const measurement = await measureElement(stepEntry.ref);
 
-        // Check if element is within visible screen bounds
-        const isAboveScreen = measurement.y < scrollPadding;
-        const isBelowScreen =
-          measurement.y + measurement.height > screenHeight - scrollPadding;
-
-        if (isAboveScreen || isBelowScreen) {
-          // Calculate the target scroll position to center the element
-          // We need to estimate based on current element position
-          scrollRef.current.scrollTo({
-            y: Math.max(
-              0,
-              measurement.y - screenHeight / 2 + measurement.height / 2
-            ),
+        // Use the scrolling utility to scroll element into view
+        // Pass current scroll offset for accurate position calculation
+        await scrollToElementUtil(
+          scrollRef,
+          measurement,
+          {
+            padding: scrollPadding,
             animated: true,
-          });
-
-          // Wait for scroll animation to complete, then re-measure
-          await new Promise((resolve) => setTimeout(resolve, 350));
-        }
+            scrollDuration: 350,
+          },
+          scrollOffsetRef.current.y
+        );
       } catch {
         // Ignore scroll errors
       }
@@ -254,6 +256,7 @@ export function IntroProvider({
       measureAllSteps,
       registerScrollView,
       unregisterScrollView,
+      updateScrollOffset,
       scrollToElement: scrollToElementById,
       tourCallbacks: tourCallbacksRef.current,
       setTourCallbacks,
@@ -270,6 +273,7 @@ export function IntroProvider({
       measureAllSteps,
       registerScrollView,
       unregisterScrollView,
+      updateScrollOffset,
       scrollToElementById,
       setTourCallbacks,
       setHintCallbacks,

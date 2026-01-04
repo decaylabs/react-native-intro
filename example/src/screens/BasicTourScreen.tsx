@@ -31,7 +31,9 @@ export function BasicTourScreen() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   // Register ScrollView for auto-scrolling during tour
-  useScrollView(scrollRef as React.RefObject<ScrollableRef | null>);
+  const { onScroll } = useScrollView(
+    scrollRef as React.RefObject<ScrollableRef | null>
+  );
 
   // Handle Get Started button press
   const handleGetStarted = () => {
@@ -92,7 +94,12 @@ export function BasicTourScreen() {
   };
 
   return (
-    <ScrollView ref={scrollRef} style={styles.container}>
+    <ScrollView
+      ref={scrollRef}
+      style={styles.container}
+      onScroll={onScroll}
+      scrollEventThrottle={16}
+    >
       {/* Header */}
       <TourStep id="welcome-header">
         <View style={styles.header}>

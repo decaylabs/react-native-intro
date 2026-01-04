@@ -23,7 +23,13 @@ export type {
 export type { HintConfig, HintControls, HintsState, HintType } from './hint';
 
 // Options types
-export type { ButtonLabels, TourOptions, HintOptions } from './options';
+export type {
+  ButtonLabels,
+  TourOptions,
+  HintOptions,
+  DirectionalPadding,
+  ScrollPadding,
+} from './options';
 
 // Event/callback types
 export type { TourCallbacks, HintCallbacks } from './events';
