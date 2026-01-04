@@ -77,10 +77,16 @@ export interface TourStepProps {
   /** Tour group identifier (for multi-tour apps) */
   group?: string;
 
-  /** Custom styles for this step's tooltip */
+  /** Hide navigation buttons for this step */
+  hideButtons?: boolean;
+
+  /** Custom styles for this step's tooltip container */
   tooltipStyle?: ViewStyle;
 
-  /** Custom styles for this step's tooltip text */
+  /** Custom styles for this step's tooltip title */
+  tooltipTitleStyle?: TextStyle;
+
+  /** Custom styles for this step's tooltip text (only applies to string content) */
   tooltipTextStyle?: TextStyle;
 }
 
@@ -131,7 +137,9 @@ export interface StepRegistryEntry {
     position?: TooltipPosition;
     disableInteraction?: boolean;
     group?: string;
+    hideButtons?: boolean;
     tooltipStyle?: ViewStyle;
+    tooltipTitleStyle?: TextStyle;
     tooltipTextStyle?: TextStyle;
   };
 }

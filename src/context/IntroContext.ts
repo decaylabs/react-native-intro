@@ -35,7 +35,9 @@ export interface StepPropsConfig {
   position?: TooltipPosition;
   disableInteraction?: boolean;
   group?: string;
+  hideButtons?: boolean;
   tooltipStyle?: ViewStyle;
+  tooltipTitleStyle?: TextStyle;
   tooltipTextStyle?: TextStyle;
 }
 

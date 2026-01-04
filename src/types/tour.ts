@@ -3,7 +3,7 @@
  */
 
 import type { ReactNode } from 'react';
-import type { ViewStyle, TextStyle } from 'react-native';
+import type { ViewStyle, TextStyle, ImageSourcePropType } from 'react-native';
 import type { TooltipPosition } from './positions';
 
 /**
@@ -15,6 +15,32 @@ export type TourState =
   | 'completed'
   | 'skipped'
   | 'dismissed';
+
+/**
+ * Image configuration for a tour step
+ */
+export interface StepImageConfig {
+  /** Image source (require() for local, { uri: '...' } for remote) */
+  source: ImageSourcePropType;
+
+  /** Image width (default: '100%') */
+  width?: number | string;
+
+  /** Image height (default: 150) */
+  height?: number;
+
+  /** Border radius for the image (default: 8) */
+  borderRadius?: number;
+
+  /** Image resize mode (default: 'cover') */
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
+
+  /** Alt text for accessibility */
+  alt?: string;
+
+  /** Position of image relative to content (default: 'top') */
+  position?: 'top' | 'bottom';
+}
 
 /**
  * Configuration for a single tour step
@@ -32,6 +58,9 @@ export interface StepConfig {
   /** Step content - string or custom React component */
   content: string | ReactNode;
 
+  /** Image to display in the tooltip */
+  image?: StepImageConfig;
+
   /** Preferred tooltip position (default: 'auto') */
   position?: TooltipPosition;
 
@@ -41,10 +70,13 @@ export interface StepConfig {
   /** Hide navigation buttons for this step (useful for interactive elements) */
   hideButtons?: boolean;
 
-  /** Custom styles for this step's tooltip */
+  /** Custom styles for this step's tooltip container */
   tooltipStyle?: ViewStyle;
 
-  /** Custom styles for this step's tooltip text */
+  /** Custom styles for this step's tooltip title */
+  tooltipTitleStyle?: TextStyle;
+
+  /** Custom styles for this step's tooltip text (only applies to string content) */
   tooltipTextStyle?: TextStyle;
 }
 
