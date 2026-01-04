@@ -1,12 +1,11 @@
 /**
  * TourOverlay - Full-screen overlay with spotlight cutout for tour steps
  *
- * Provides a clean step transition pattern:
- * 1. Fade out current spotlight (show full overlay)
- * 2. Scroll to new target element
- * 3. Measure element position
- * 4. Fade in spotlight at new position
- * 5. Show tooltip
+ * Animation sequence (matching intro.js):
+ * 1. Tooltip disappears
+ * 2. Page scrolls to new target (if needed)
+ * 3. Spotlight morphs to new target position/size
+ * 4. Tooltip appears
  */
 
 import { useEffect, useCallback, useRef, useState } from 'react';
@@ -31,7 +30,12 @@ interface TourOverlayProps {
 /**
  * Transition states for step changes
  */
-type TransitionState = 'idle' | 'fading-out' | 'scrolling' | 'ready';
+type TransitionState =
+  | 'idle'
+  | 'hiding-tooltip'
+  | 'scrolling'
+  | 'morphing'
+  | 'ready';
 
 /**
  * TourOverlay component
@@ -56,10 +60,12 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   // Local transition state for coordinating animations
   const [transitionState, setTransitionState] =
     useState<TransitionState>('idle');
+
+  // Spotlight measurement - this is what the spotlight animates TO
   const [spotlightMeasurement, setSpotlightMeasurement] =
     useState<ElementMeasurement | null>(null);
 
-  // Cache the displayed step to prevent content changing during fade-out
+  // Cache the displayed step to prevent content changing during transitions
   const [displayedStep, setDisplayedStep] = useState(currentStep);
   const [displayedStepIndex, setDisplayedStepIndex] = useState(
     tour.currentStepIndex
@@ -67,6 +73,12 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
   // Track which step we're currently showing/transitioning to
   const currentStepRef = useRef<number>(-1);
+
+  // Callback to signal morph animation is complete
+  const onMorphComplete = useCallback(() => {
+    setTransitionState('ready');
+    dispatch({ type: 'SHOW_TOOLTIP' });
+  }, [dispatch]);
 
   // Handle step transitions
   useEffect(() => {
@@ -87,24 +99,23 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     currentStepRef.current = stepIndex;
 
     const performTransition = async () => {
-      // Step 1: Fade out (skip for first step)
-      // Wait slightly longer than the animation to ensure tooltip is fully hidden
-      if (!isFirstStep && shouldAnimate) {
-        setTransitionState('fading-out');
-        await new Promise((resolve) => setTimeout(resolve, duration / 2 + 50));
+      // Step 1: Hide tooltip (keep spotlight visible)
+      if (!isFirstStep) {
+        setTransitionState('hiding-tooltip');
+        dispatch({ type: 'HIDE_TOOLTIP' });
+        // Wait for tooltip to fade out
+        if (shouldAnimate) {
+          await new Promise((resolve) => setTimeout(resolve, duration / 2));
+        }
       }
 
-      // Step 2: Update displayed step content (after tooltip is fully hidden)
-      setDisplayedStep(currentStep);
-      setDisplayedStepIndex(stepIndex);
-
-      // Step 3: Scroll to element (default: true)
+      // Step 2: Scroll to element (if needed)
       setTransitionState('scrolling');
       if (tour.options.scrollToElement !== false) {
         await scrollToElement(targetId);
       }
 
-      // Step 4: Measure element at final position
+      // Step 3: Measure element at final position
       const measurement = await measureElement(targetId);
 
       // Debug: Log measurement to help diagnose spotlight issues
@@ -119,14 +130,21 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
         });
       }
 
-      // Step 5: Update spotlight position and fade in
-      if (measurement) {
-        setSpotlightMeasurement(measurement);
-      }
-      setTransitionState('ready');
+      // Update displayed step content
+      setDisplayedStep(currentStep);
+      setDisplayedStepIndex(stepIndex);
 
-      // Step 6: Show tooltip
-      dispatch({ type: 'SHOW_TOOLTIP' });
+      // Step 4: Start morph animation to new position
+      if (measurement) {
+        setTransitionState('morphing');
+        setSpotlightMeasurement(measurement);
+
+        // For first step or no animation, complete immediately
+        if (isFirstStep || !shouldAnimate) {
+          onMorphComplete();
+        }
+        // Otherwise, onMorphComplete will be called by SpotlightOverlay
+      }
     };
 
     performTransition();
@@ -140,6 +158,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     measureElement,
     scrollToElement,
     dispatch,
+    onMorphComplete,
   ]);
 
   // Reset when tour ends
@@ -207,13 +226,15 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     return null;
   }
 
-  // Determine if spotlight should be shown (must have valid measurement)
+  // Determine if spotlight should be shown
   const showSpotlight =
-    transitionState === 'ready' &&
     spotlightMeasurement &&
     spotlightMeasurement.measured &&
     spotlightMeasurement.width > 0 &&
     spotlightMeasurement.height > 0;
+
+  // Show tooltip only when ready (after morph animation completes)
+  const showTooltip = ui.tooltipVisible && transitionState === 'ready';
 
   return (
     <Animated.View
@@ -232,6 +253,8 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
             animate={shouldAnimate}
             duration={duration}
             onOverlayPress={handleOverlayPress}
+            onMorphComplete={onMorphComplete}
+            isMorphing={transitionState === 'morphing'}
             disableInteraction={
               displayedStep?.disableInteraction ??
               tour.options.disableInteraction ??
@@ -253,7 +276,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
         )}
       </View>
 
-      {/* Animated Tooltip - uses cached displayedStep to prevent content flash */}
+      {/* Animated Tooltip */}
       {displayedStep && (
         <AnimatedTooltip
           step={displayedStep}
@@ -262,7 +285,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
           targetMeasurement={spotlightMeasurement}
           options={tour.options}
           theme={theme}
-          visible={ui.tooltipVisible && transitionState === 'ready'}
+          visible={showTooltip}
         />
       )}
     </Animated.View>
@@ -273,7 +296,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
  * SpotlightOverlay - Renders overlay with spotlight cutout
  *
  * Uses 4 rectangles around the target to create the spotlight effect.
- * Fades in when shown, no position animation (position is set immediately).
+ * Animates position and size when measurement changes (morph effect).
  */
 function SpotlightOverlay({
   measurement,
@@ -282,6 +305,8 @@ function SpotlightOverlay({
   animate,
   duration,
   onOverlayPress,
+  onMorphComplete,
+  isMorphing,
   disableInteraction,
 }: {
   measurement: ElementMeasurement;
@@ -290,35 +315,83 @@ function SpotlightOverlay({
   animate: boolean;
   duration: number;
   onOverlayPress: () => void;
+  onMorphComplete: () => void;
+  isMorphing: boolean;
   disableInteraction: boolean;
 }) {
-  const { x, y, width, height } = measurement;
-
-  // Add padding around the spotlight
   const padding = 8;
-  const spotX = Math.max(0, x - padding);
-  const spotY = Math.max(0, y - padding);
-  const spotWidth = width + padding * 2;
-  const spotHeight = height + padding * 2;
-  const spotBottom = spotY + spotHeight;
-  const spotRight = spotX + spotWidth;
 
-  // Fade-in animation for the spotlight
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  // Animated values for spotlight position/size
+  const animX = useRef(new Animated.Value(0)).current;
+  const animY = useRef(new Animated.Value(0)).current;
+  const animWidth = useRef(new Animated.Value(0)).current;
+  const animHeight = useRef(new Animated.Value(0)).current;
 
+  // Track if this is the first render (no animation needed)
+  const isFirstRender = useRef(true);
+
+  // Update animated values when measurement changes
   useEffect(() => {
-    if (animate) {
-      fadeAnim.setValue(0);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
+    const targetX = Math.max(0, measurement.x - padding);
+    const targetY = Math.max(0, measurement.y - padding);
+    const targetWidth = measurement.width + padding * 2;
+    const targetHeight = measurement.height + padding * 2;
+
+    if (isFirstRender.current || !animate) {
+      // First render or no animation - set values immediately
+      animX.setValue(targetX);
+      animY.setValue(targetY);
+      animWidth.setValue(targetWidth);
+      animHeight.setValue(targetHeight);
+      isFirstRender.current = false;
+
+      if (isMorphing) {
+        onMorphComplete();
+      }
     } else {
-      fadeAnim.setValue(1);
+      // Animate to new position/size
+      Animated.parallel([
+        Animated.timing(animX, {
+          toValue: targetX,
+          duration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false, // Can't use native driver for layout props
+        }),
+        Animated.timing(animY, {
+          toValue: targetY,
+          duration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(animWidth, {
+          toValue: targetWidth,
+          duration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(animHeight, {
+          toValue: targetHeight,
+          duration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        if (isMorphing) {
+          onMorphComplete();
+        }
+      });
     }
-  }, [animate, duration, fadeAnim, measurement]);
+  }, [
+    measurement,
+    animate,
+    duration,
+    animX,
+    animY,
+    animWidth,
+    animHeight,
+    isMorphing,
+    onMorphComplete,
+  ]);
 
   const overlayStyle: ViewStyle = {
     backgroundColor: overlayColor,
@@ -326,32 +399,34 @@ function SpotlightOverlay({
     position: 'absolute',
   };
 
+  // Calculate animated bottom and right edges
+  const animBottom = Animated.add(animY, animHeight);
+  const animRight = Animated.add(animX, animWidth);
+
   return (
-    <Animated.View
-      style={[StyleSheet.absoluteFillObject, { opacity: fadeAnim }]}
-      pointerEvents="box-none"
-    >
-      {/* Top rectangle */}
+    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+      {/* Top rectangle - from top of screen to top of spotlight */}
       <TouchableWithoutFeedback onPress={onOverlayPress}>
-        <View
+        <Animated.View
           style={[
             overlayStyle,
             {
               top: 0,
               left: 0,
               right: 0,
-              height: spotY,
+              height: animY,
             },
           ]}
         />
       </TouchableWithoutFeedback>
-      {/* Bottom rectangle */}
+
+      {/* Bottom rectangle - from bottom of spotlight to bottom of screen */}
       <TouchableWithoutFeedback onPress={onOverlayPress}>
-        <View
+        <Animated.View
           style={[
             overlayStyle,
             {
-              top: spotBottom,
+              top: animBottom,
               left: 0,
               right: 0,
               bottom: 0,
@@ -359,47 +434,50 @@ function SpotlightOverlay({
           ]}
         />
       </TouchableWithoutFeedback>
-      {/* Left rectangle */}
+
+      {/* Left rectangle - left side of spotlight row */}
       <TouchableWithoutFeedback onPress={onOverlayPress}>
-        <View
+        <Animated.View
           style={[
             overlayStyle,
             {
-              top: spotY,
+              top: animY,
               left: 0,
-              width: spotX,
-              height: spotHeight,
+              width: animX,
+              height: animHeight,
             },
           ]}
         />
       </TouchableWithoutFeedback>
-      {/* Right rectangle */}
+
+      {/* Right rectangle - right side of spotlight row */}
       <TouchableWithoutFeedback onPress={onOverlayPress}>
-        <View
+        <Animated.View
           style={[
             overlayStyle,
             {
-              top: spotY,
-              left: spotRight,
+              top: animY,
+              left: animRight,
               right: 0,
-              height: spotHeight,
+              height: animHeight,
             },
           ]}
         />
       </TouchableWithoutFeedback>
+
       {/* Interaction blocker over spotlight - only when disableInteraction is true */}
       {disableInteraction && (
-        <View
+        <Animated.View
           style={{
             position: 'absolute',
-            top: spotY,
-            left: spotX,
-            width: spotWidth,
-            height: spotHeight,
+            top: animY,
+            left: animX,
+            width: animWidth,
+            height: animHeight,
           }}
         />
       )}
-    </Animated.View>
+    </View>
   );
 }
 

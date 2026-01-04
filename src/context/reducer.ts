@@ -147,6 +147,16 @@ export function introReducer(
       };
     }
 
+    case 'HIDE_TOOLTIP': {
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          tooltipVisible: false,
+        },
+      };
+    }
+
     // =========================================================================
     // HINT ACTIONS
     // =========================================================================
