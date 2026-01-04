@@ -56,6 +56,20 @@ interface TourStepPropsWithStyle extends TourStepProps {
  *   </TouchableOpacity>
  * </TourStep>
  * ```
+ *
+ * @example
+ * ```tsx
+ * // Floating step (no target element)
+ * // Perfect for welcome messages or intro screens
+ *
+ * <TourStep
+ *   id="welcome"
+ *   order={1}
+ *   floating
+ *   title="Welcome!"
+ *   intro="This is a floating tooltip that appears centered on screen."
+ * />
+ * ```
  */
 export function TourStep({
   id,
@@ -70,9 +84,13 @@ export function TourStep({
   tooltipStyle,
   tooltipTitleStyle,
   tooltipTextStyle,
+  floating,
   style,
 }: TourStepPropsWithStyle) {
+  // Use 'any' to work around complex RN 0.81 View typing issues
   const viewRef = useRef<any>(null);
+  // Floating steps don't need a ref since there's no element to measure
+  const floatingRef = useRef<any>(null);
   const { registerStep, unregisterStep } = useIntroContext();
 
   // Build props config object (only include defined values)
@@ -90,6 +108,7 @@ export function TourStep({
       config.tooltipTitleStyle = tooltipTitleStyle;
     if (tooltipTextStyle !== undefined)
       config.tooltipTextStyle = tooltipTextStyle;
+    if (floating !== undefined) config.floating = floating;
     return Object.keys(config).length > 0 ? config : undefined;
   }, [
     intro,
@@ -101,16 +120,23 @@ export function TourStep({
     tooltipStyle,
     tooltipTitleStyle,
     tooltipTextStyle,
+    floating,
   ]);
 
   // Register on mount, unregister on unmount
   useEffect(() => {
-    registerStep(id, viewRef, order, propsConfig);
+    // Use null ref for floating steps (no element to measure)
+    registerStep(id, floating ? floatingRef : viewRef, order, propsConfig);
 
     return () => {
       unregisterStep(id);
     };
-  }, [id, order, propsConfig, registerStep, unregisterStep]);
+  }, [id, order, propsConfig, floating, registerStep, unregisterStep]);
+
+  // Floating steps don't render anything
+  if (floating) {
+    return null;
+  }
 
   // Wrap the child in a View to ensure we can measure it
   // collapsable={false} is required for accurate measurement on Android

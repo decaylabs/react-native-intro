@@ -39,6 +39,7 @@ export interface StepPropsConfig {
   tooltipStyle?: ViewStyle;
   tooltipTitleStyle?: TextStyle;
   tooltipTextStyle?: TextStyle;
+  floating?: boolean;
 }
 
 /**

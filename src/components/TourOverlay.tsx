@@ -85,8 +85,8 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     const stepIndex = tour.currentStepIndex;
     const targetId = currentStep?.targetId;
 
-    // Skip if tour isn't active or no target
-    if (tour.state !== 'active' || !targetId) {
+    // Skip if tour isn't active
+    if (tour.state !== 'active') {
       return;
     }
 
@@ -98,6 +98,9 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     const isFirstStep = currentStepRef.current === -1;
     currentStepRef.current = stepIndex;
 
+    // Check if this is a floating tooltip (no target element)
+    const isFloating = !targetId;
+
     const performTransition = async () => {
       // Step 1: Hide tooltip (keep spotlight visible)
       if (!isFirstStep) {
@@ -107,6 +110,27 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
         if (shouldAnimate) {
           await new Promise((resolve) => setTimeout(resolve, duration / 2));
         }
+      }
+
+      // For floating tooltips, skip scroll and measurement
+      if (isFloating) {
+        // Update displayed step content
+        setDisplayedStep(currentStep);
+        setDisplayedStepIndex(stepIndex);
+
+        // Clear spotlight for floating tooltip
+        setTransitionState('morphing');
+        setSpotlightMeasurement(null);
+
+        // Complete immediately (no morph animation for floating)
+        onMorphComplete();
+
+        if (__DEV__) {
+          console.log(
+            `[TourOverlay] Step ${stepIndex}: floating tooltip (no target)`
+          );
+        }
+        return;
       }
 
       // Step 2: Scroll to element (if needed)
@@ -245,6 +269,9 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
       <View style={styles.overlayContainer} pointerEvents="box-none">
         {showSpotlight ? (
           <SpotlightOverlay
+            // Key forces fresh component instance for each step, ensuring
+            // isFirstRender is reset when transitioning from floating steps
+            key={`spotlight-${tour.currentStepIndex}`}
             measurement={spotlightMeasurement}
             overlayColor={theme.overlay.backgroundColor}
             overlayOpacity={

@@ -48,8 +48,7 @@ export function BasicTourScreen() {
   };
 
   const startTour = () => {
-    // Props-based: tour.start() uses step props from TourStep components
-    // Global options can be passed directly
+    // Props-based tour - step content defined on TourStep components
     tour.start({
       animate: animationsEnabled,
       animationDuration: 500,
@@ -58,6 +57,15 @@ export function BasicTourScreen() {
 
   return (
     <View style={styles.screenContainer}>
+      {/* Floating Welcome Step - no element, just a centered tooltip */}
+      <TourStep
+        id="floating-welcome"
+        order={0}
+        floating
+        title="Welcome to the Tour!"
+        intro="This is a floating tooltip - it appears centered on screen without highlighting any element. Perfect for welcome messages!"
+      />
+
       <ScrollView
         ref={scrollRef}
         style={styles.container}
@@ -134,7 +142,7 @@ export function BasicTourScreen() {
           <TourStep
             id="feature-2"
             order={4}
-            title="🎨 Customizable Tooltips"
+            title="Customizable Tooltips"
             intro={
               <View>
                 <Text style={tourStepStyles.customContent}>

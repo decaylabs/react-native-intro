@@ -81,7 +81,8 @@ export function useIntro(): UseIntroReturn {
 
       return steps.map((step, index) => ({
         id: `step-${index + 1}`,
-        targetId: step.id,
+        // Floating steps have no targetId (they're centered on screen)
+        targetId: step.props.floating ? undefined : step.id,
         content: step.props.intro!,
         title: step.props.title,
         position: step.props.position,
