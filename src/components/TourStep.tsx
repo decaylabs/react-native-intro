@@ -3,9 +3,17 @@
  */
 
 import { useRef, useEffect, useMemo } from 'react';
-import { View } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import { useIntroContext } from '../context/useIntroContext';
 import type { TourStepProps } from '../types';
+
+interface TourStepPropsWithStyle extends TourStepProps {
+  /**
+   * Style for the wrapper View. Useful for absolutely positioned elements
+   * where the wrapper needs matching positioning.
+   */
+  style?: ViewStyle;
+}
 
 /**
  * TourStep wrapper component
@@ -32,6 +40,22 @@ import type { TourStepProps } from '../types';
  * </TourStep>
  * tour.start('tour-id', [{ id: 'step-1', targetId: 'welcome', content: '...' }]);
  * ```
+ *
+ * @example
+ * ```tsx
+ * // Absolutely positioned elements (e.g., FAB buttons)
+ * // Pass positioning styles to the `style` prop so the wrapper
+ * // matches the child's position and can be measured correctly.
+ *
+ * <TourStep
+ *   id="fab"
+ *   style={{ position: 'absolute', bottom: 20, right: 20 }}
+ * >
+ *   <TouchableOpacity style={styles.fabButton}>
+ *     <Text>+</Text>
+ *   </TouchableOpacity>
+ * </TourStep>
+ * ```
  */
 export function TourStep({
   id,
@@ -44,7 +68,8 @@ export function TourStep({
   group,
   tooltipStyle,
   tooltipTextStyle,
-}: TourStepProps) {
+  style,
+}: TourStepPropsWithStyle) {
   const viewRef = useRef<any>(null);
   const { registerStep, unregisterStep } = useIntroContext();
 
@@ -83,7 +108,7 @@ export function TourStep({
   // Wrap the child in a View to ensure we can measure it
   // collapsable={false} is required for accurate measurement on Android
   return (
-    <View ref={viewRef} collapsable={false}>
+    <View ref={viewRef} collapsable={false} style={style}>
       {children}
     </View>
   );

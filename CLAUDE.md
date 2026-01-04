@@ -111,6 +111,37 @@ If there are lint errors, fix them with `yarn lint --fix` or manually.
 
 The pre-commit hook runs `yarn typecheck` and `yarn lint` - code must compile and pass linting before commits are accepted.
 
+## Documentation Maintenance
+
+**CRITICAL**: All documentation must be kept up-to-date with every feature change. When adding or modifying features, update the relevant documentation files:
+
+### Documentation Files
+
+| File | Purpose | Update When |
+|------|---------|-------------|
+| `README.md` | User-facing API docs, installation, usage examples | Any public API change, new feature, or configuration option |
+| `DEVELOPER.md` | Developer setup, building, testing, troubleshooting | Build process changes, new dev workflows, common issues |
+| `MAINTAINER.md` | Release process, publishing, bob tool, versioning | Release workflow changes, new maintenance tasks |
+| `LLM.md` | Complete library docs for AI coding agents | Any feature, API, or integration pattern change |
+| `CLAUDE.md` | AI assistant instructions for this codebase | Project structure changes, new conventions |
+
+### JSDoc Comments
+
+All public APIs in `src/` must have complete JSDoc documentation:
+- Components: Purpose, props, usage examples
+- Hooks: Return values, usage patterns
+- Types: Property descriptions
+- Utilities: Parameters, return values, examples
+
+### Documentation Checklist
+
+When completing any feature work:
+1. Update README.md if the feature affects public API or usage
+2. Update JSDoc comments for any new/modified exports
+3. Update LLM.md with integration guidance for the feature
+4. Update DEVELOPER.md if the feature affects development workflow
+5. Update this file (CLAUDE.md) if architecture or conventions change
+
 ## Active Technologies
 - TypeScript 5.9+ (strict mode) (001-rn-intro-library)
 - AsyncStorage for "Don't show again" preference (with custom adapter option) (001-rn-intro-library)

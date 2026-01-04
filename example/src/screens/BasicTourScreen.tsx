@@ -77,6 +77,13 @@ export function BasicTourScreen() {
         },
         {
           id: 'step-5',
+          targetId: 'fab-button',
+          title: 'Small Elements',
+          content:
+            'The spotlight can highlight small elements too, like this floating action button!',
+        },
+        {
+          id: 'step-6',
           targetId: 'action-button',
           title: 'Try It Out!',
           content:
@@ -94,135 +101,147 @@ export function BasicTourScreen() {
   };
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.container}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
-    >
-      {/* Header */}
-      <TourStep id="welcome-header">
-        <View style={styles.header}>
-          <Text style={styles.title}>Basic Tour Demo</Text>
-          <Text style={styles.subtitle}>
-            Tap the button below to start the tour
-          </Text>
-        </View>
-      </TourStep>
-
-      {/* Animation Toggle */}
-      <View style={styles.toggleContainer}>
-        <Text style={styles.toggleLabel}>Animations</Text>
-        <Switch
-          value={animationsEnabled}
-          onValueChange={setAnimationsEnabled}
-          trackColor={{ false: '#ccc', true: '#81b0ff' }}
-          thumbColor={animationsEnabled ? '#007AFF' : '#f4f3f4'}
-        />
-        <Text style={styles.toggleStatus}>
-          {animationsEnabled ? 'ON' : 'OFF'}
-        </Text>
-      </View>
-
-      {/* Start Tour Button */}
-      <TouchableOpacity
-        style={styles.startButton}
-        onPress={startTour}
-        disabled={tour.isActive}
+    <View style={styles.screenContainer}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.container}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
-        <Text style={styles.startButtonText}>
-          {tour.isActive ? 'Tour in progress...' : 'Start Tour'}
-        </Text>
-      </TouchableOpacity>
+        {/* Header */}
+        <TourStep id="welcome-header">
+          <View style={styles.header}>
+            <Text style={styles.title}>Basic Tour Demo</Text>
+            <Text style={styles.subtitle}>
+              Tap the button below to start the tour
+            </Text>
+          </View>
+        </TourStep>
 
-      {/* Tour Status */}
-      {tour.isActive && (
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>
-            Step {tour.currentStep + 1} of {tour.totalSteps}
+        {/* Animation Toggle */}
+        <View style={styles.toggleContainer}>
+          <Text style={styles.toggleLabel}>Animations</Text>
+          <Switch
+            value={animationsEnabled}
+            onValueChange={setAnimationsEnabled}
+            trackColor={{ false: '#ccc', true: '#81b0ff' }}
+            thumbColor={animationsEnabled ? '#007AFF' : '#f4f3f4'}
+          />
+          <Text style={styles.toggleStatus}>
+            {animationsEnabled ? 'ON' : 'OFF'}
           </Text>
         </View>
-      )}
 
-      {/* Feature Cards */}
-      <View style={styles.cardsContainer}>
-        <TourStep id="feature-1">
-          <View style={[styles.card, styles.cardBlue]}>
-            <Text style={styles.cardTitle}>🚀 Fast Setup</Text>
-            <Text style={styles.cardDescription}>
-              Add guided tours to your app with minimal configuration.
-            </Text>
-          </View>
-        </TourStep>
-
-        <TourStep id="feature-2">
-          <View style={[styles.card, styles.cardGreen]}>
-            <Text style={styles.cardTitle}>🎨 Customizable</Text>
-            <Text style={styles.cardDescription}>
-              Customize colors, themes, and button labels to match your app.
-            </Text>
-          </View>
-        </TourStep>
-
-        <TourStep id="feature-3">
-          <View style={[styles.card, styles.cardPurple]}>
-            <Text style={styles.cardTitle}>📱 Native Feel</Text>
-            <Text style={styles.cardDescription}>
-              Built specifically for React Native with smooth animations.
-            </Text>
-          </View>
-        </TourStep>
-      </View>
-
-      {/* Action Button */}
-      <TourStep id="action-button">
+        {/* Start Tour Button */}
         <TouchableOpacity
-          style={styles.actionButton}
-          onPress={handleGetStarted}
+          style={styles.startButton}
+          onPress={startTour}
+          disabled={tour.isActive}
         >
-          <Text style={styles.actionButtonText}>Get Started</Text>
+          <Text style={styles.startButtonText}>
+            {tour.isActive ? 'Tour in progress...' : 'Start Tour'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Tour Status */}
+        {tour.isActive && (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>
+              Step {tour.currentStep + 1} of {tour.totalSteps}
+            </Text>
+          </View>
+        )}
+
+        {/* Feature Cards */}
+        <View style={styles.cardsContainer}>
+          <TourStep id="feature-1">
+            <View style={[styles.card, styles.cardBlue]}>
+              <Text style={styles.cardTitle}>🚀 Fast Setup</Text>
+              <Text style={styles.cardDescription}>
+                Add guided tours to your app with minimal configuration.
+              </Text>
+            </View>
+          </TourStep>
+
+          <TourStep id="feature-2">
+            <View style={[styles.card, styles.cardGreen]}>
+              <Text style={styles.cardTitle}>🎨 Customizable</Text>
+              <Text style={styles.cardDescription}>
+                Customize colors, themes, and button labels to match your app.
+              </Text>
+            </View>
+          </TourStep>
+
+          <TourStep id="feature-3">
+            <View style={[styles.card, styles.cardPurple]}>
+              <Text style={styles.cardTitle}>📱 Native Feel</Text>
+              <Text style={styles.cardDescription}>
+                Built specifically for React Native with smooth animations.
+              </Text>
+            </View>
+          </TourStep>
+        </View>
+
+        {/* Action Button */}
+        <TourStep id="action-button">
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleGetStarted}
+          >
+            <Text style={styles.actionButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        </TourStep>
+
+        {/* Additional info */}
+        <TourStep id="info-text">
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>
+              The tour highlights each TourStep component in sequence, showing a
+              spotlight overlay and tooltip with navigation controls.
+            </Text>
+          </View>
+        </TourStep>
+
+        {/* Completion Modal */}
+        <Modal
+          visible={showCompletionModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowCompletionModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalEmoji}>🎉</Text>
+              <Text style={styles.modalTitle}>Tour Complete!</Text>
+              <Text style={styles.modalText}>
+                You've successfully completed the onboarding tour. You're now
+                ready to explore the app!
+              </Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setShowCompletionModal(false)}
+              >
+                <Text style={styles.modalButtonText}>Awesome!</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+
+      {/* FAB - Floating Action Button */}
+      <TourStep id="fab-button" style={styles.fabWrapper}>
+        <TouchableOpacity style={styles.fabButton} activeOpacity={0.8}>
+          <Text style={styles.fabIcon}>+</Text>
         </TouchableOpacity>
       </TourStep>
-
-      {/* Additional info */}
-      <TourStep id="info-text">
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>
-            The tour highlights each TourStep component in sequence, showing a
-            spotlight overlay and tooltip with navigation controls.
-          </Text>
-        </View>
-      </TourStep>
-
-      {/* Completion Modal */}
-      <Modal
-        visible={showCompletionModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowCompletionModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalEmoji}>🎉</Text>
-            <Text style={styles.modalTitle}>Tour Complete!</Text>
-            <Text style={styles.modalText}>
-              You've successfully completed the onboarding tour. You're now
-              ready to explore the app!
-            </Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowCompletionModal(false)}
-            >
-              <Text style={styles.modalButtonText}>Awesome!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -392,5 +411,29 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  fabWrapper: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+  },
+  fabButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FF5722',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  fabIcon: {
+    fontSize: 28,
+    color: '#ffffff',
+    fontWeight: '300',
+    marginTop: -2,
   },
 });

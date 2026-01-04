@@ -221,6 +221,7 @@ export type IntroAction =
   | { type: 'END_TOUR'; reason: 'completed' | 'skipped' | 'dismissed' }
   | { type: 'SET_TRANSITIONING'; isTransitioning: boolean }
   | { type: 'SHOW_TOOLTIP' }
+  | { type: 'HIDE_TOOLTIP' }
   // Hint actions
   | { type: 'SHOW_HINTS'; hints: HintConfig[]; options?: HintOptions }
   | { type: 'HIDE_HINTS' }
