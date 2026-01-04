@@ -100,5 +100,10 @@ export interface Theme {
 
 /**
  * Theme name for built-in themes
+ *
+ * - 'classic': Light theme with blue accents (default)
+ * - 'modern': Contemporary design with indigo accents
+ * - 'dark': Dark theme with cyan accents
+ * - 'auto': Automatically switch between 'classic' and 'dark' based on system setting
  */
-export type ThemeName = 'classic' | 'modern' | 'dark';
+export type ThemeName = 'classic' | 'modern' | 'dark' | 'auto';

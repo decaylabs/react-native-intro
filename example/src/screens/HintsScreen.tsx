@@ -17,7 +17,42 @@ import {
 } from 'react-native';
 import { HintSpot, useHints } from 'react-native-intro';
 
-export function HintsScreen() {
+interface HintsScreenProps {
+  isDark?: boolean;
+}
+
+// Color schemes
+const Colors = {
+  light: {
+    background: '#f5f5f5',
+    surface: '#ffffff',
+    border: '#e0e0e0',
+    text: '#333333',
+    textSecondary: '#666666',
+    accent: '#007AFF',
+    iconBackground: '#f0f0f0',
+    // Card colors
+    cardBlue: { bg: '#E3F2FD', border: '#2196F3' },
+    cardGreen: { bg: '#E8F5E9', border: '#4CAF50' },
+    cardPurple: { bg: '#F3E5F5', border: '#9C27B0' },
+  },
+  dark: {
+    background: '#121212',
+    surface: '#1e1e1e',
+    border: '#333333',
+    text: '#ffffff',
+    textSecondary: '#a0a0a0',
+    accent: '#0a84ff',
+    iconBackground: '#2c2c2e',
+    // Dark card colors
+    cardBlue: { bg: '#1a2634', border: '#2196F3' },
+    cardGreen: { bg: '#1a2e1a', border: '#4CAF50' },
+    cardPurple: { bg: '#2a1a2e', border: '#9C27B0' },
+  },
+};
+
+export function HintsScreen({ isDark = false }: HintsScreenProps) {
+  const colors = isDark ? Colors.dark : Colors.light;
   const hints = useHints();
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
@@ -35,9 +70,19 @@ export function HintsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       {/* Header with action buttons */}
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         {/* Props-based hint configuration */}
         <HintSpot
           id="avatar"
@@ -45,12 +90,12 @@ export function HintsScreen() {
           hintPosition="bottom-right"
           hintType="info"
         >
-          <View style={styles.avatar}>
+          <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
             <Text style={styles.avatarText}>JD</Text>
           </View>
         </HintSpot>
 
-        <Text style={styles.title}>Hints Demo</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Hints Demo</Text>
 
         <View style={styles.headerIcons}>
           <HintSpot
@@ -59,7 +104,12 @@ export function HintsScreen() {
             hintPosition="bottom-left"
             hintType="info"
           >
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: colors.iconBackground },
+              ]}
+            >
               <Text style={styles.iconText}>🔍</Text>
             </TouchableOpacity>
           </HintSpot>
@@ -70,7 +120,12 @@ export function HintsScreen() {
             hintPosition="bottom-center"
             hintType="warning"
           >
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: colors.iconBackground },
+              ]}
+            >
               <Text style={styles.iconText}>🔔</Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>3</Text>
@@ -83,7 +138,12 @@ export function HintsScreen() {
             hint="Access app settings and preferences"
             hintPosition="bottom-center"
           >
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={[
+                styles.iconButton,
+                { backgroundColor: colors.iconBackground },
+              ]}
+            >
               <Text style={styles.iconText}>⚙️</Text>
             </TouchableOpacity>
           </HintSpot>
@@ -91,15 +151,25 @@ export function HintsScreen() {
       </View>
 
       {/* Animation Toggle */}
-      <View style={styles.toggleContainer}>
-        <Text style={styles.toggleLabel}>Pulse Animation</Text>
+      <View
+        style={[
+          styles.toggleContainer,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <Text style={[styles.toggleLabel, { color: colors.text }]}>
+          Pulse Animation
+        </Text>
         <Switch
           value={animationsEnabled}
           onValueChange={setAnimationsEnabled}
-          trackColor={{ false: '#ccc', true: '#81b0ff' }}
-          thumbColor={animationsEnabled ? '#007AFF' : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: colors.accent }}
+          thumbColor={animationsEnabled ? colors.accent : '#f4f3f4'}
         />
-        <Text style={styles.toggleStatus}>
+        <Text style={[styles.toggleStatus, { color: colors.textSecondary }]}>
           {animationsEnabled ? 'ON' : 'OFF'}
         </Text>
       </View>
@@ -109,18 +179,17 @@ export function HintsScreen() {
         <TouchableOpacity
           style={[
             styles.toggleButton,
+            { borderColor: colors.accent },
             hints.isVisible
-              ? styles.toggleButtonActive
-              : styles.toggleButtonInactive,
+              ? { backgroundColor: colors.surface }
+              : { backgroundColor: colors.accent },
           ]}
           onPress={toggleHints}
         >
           <Text
             style={[
               styles.toggleButtonText,
-              hints.isVisible
-                ? styles.toggleButtonTextActive
-                : styles.toggleButtonTextInactive,
+              hints.isVisible ? { color: colors.accent } : { color: '#ffffff' },
             ]}
           >
             {hints.isVisible ? 'Hide Hints' : 'Show Hints'}
@@ -129,7 +198,12 @@ export function HintsScreen() {
       </View>
 
       {/* Info Section */}
-      <View style={styles.infoContainer}>
+      <View
+        style={[
+          styles.infoContainer,
+          isDark && { backgroundColor: '#3D2C00', borderLeftColor: '#FF9800' },
+        ]}
+      >
         <Text style={styles.infoTitle}>How Hints Work</Text>
         <Text style={styles.infoText}>
           • Wrap elements with{' '}
@@ -155,24 +229,60 @@ export function HintsScreen() {
 
       {/* Feature Cards */}
       <View style={styles.cardsContainer}>
-        <View style={[styles.card, styles.cardBlue]}>
-          <Text style={styles.cardTitle}>🎯 Contextual Help</Text>
-          <Text style={styles.cardDescription}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.cardBlue.bg,
+              borderLeftColor: colors.cardBlue.border,
+            },
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            🎯 Contextual Help
+          </Text>
+          <Text
+            style={[styles.cardDescription, { color: colors.textSecondary }]}
+          >
             Hints provide contextual information without interrupting the user
             experience.
           </Text>
         </View>
 
-        <View style={[styles.card, styles.cardGreen]}>
-          <Text style={styles.cardTitle}>✨ Non-Intrusive</Text>
-          <Text style={styles.cardDescription}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.cardGreen.bg,
+              borderLeftColor: colors.cardGreen.border,
+            },
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            ✨ Non-Intrusive
+          </Text>
+          <Text
+            style={[styles.cardDescription, { color: colors.textSecondary }]}
+          >
             Unlike tours, hints stay visible until the user dismisses them.
           </Text>
         </View>
 
-        <View style={[styles.card, styles.cardPurple]}>
-          <Text style={styles.cardTitle}>📍 Positioned</Text>
-          <Text style={styles.cardDescription}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: colors.cardPurple.bg,
+              borderLeftColor: colors.cardPurple.border,
+            },
+          ]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            📍 Positioned
+          </Text>
+          <Text
+            style={[styles.cardDescription, { color: colors.textSecondary }]}
+          >
             Position indicators at different corners of your elements.
           </Text>
         </View>
