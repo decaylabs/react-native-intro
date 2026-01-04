@@ -18,6 +18,8 @@ import {
   calculateFloatingPosition,
 } from '../utils/positioning';
 import { classicTheme } from '../themes/classic';
+import { ProgressBar } from './ProgressBar';
+import { StepBullets } from './StepBullets';
 import type {
   StepConfig,
   StepImageConfig,
@@ -303,50 +305,20 @@ export function Tooltip({
 
       {/* Progress indicator */}
       {options.showProgress && (
-        <View style={styles.progressContainer}>
-          <View
-            style={[
-              styles.progressBar,
-              { backgroundColor: theme.progress.barBackgroundColor },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  backgroundColor: theme.progress.barFillColor,
-                  width: `${((stepIndex + 1) / totalSteps) * 100}%`,
-                },
-              ]}
-            />
-          </View>
-          <Text style={styles.progressText}>
-            {stepIndex + 1} / {totalSteps}
-          </Text>
-        </View>
+        <ProgressBar
+          currentStep={stepIndex}
+          totalSteps={totalSteps}
+          theme={theme.progress}
+        />
       )}
 
       {/* Step bullets */}
       {options.showBullets && (
-        <View style={styles.bulletsContainer}>
-          {Array.from({ length: totalSteps }).map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.bullet,
-                {
-                  backgroundColor:
-                    index === stepIndex
-                      ? theme.progress.bulletActiveColor
-                      : theme.progress.bulletColor,
-                  width: theme.progress.bulletSize,
-                  height: theme.progress.bulletSize,
-                  borderRadius: theme.progress.bulletSize / 2,
-                },
-              ]}
-            />
-          ))}
-        </View>
+        <StepBullets
+          currentStep={stepIndex}
+          totalSteps={totalSteps}
+          theme={theme.progress}
+        />
       )}
 
       {/* Don't show again checkbox */}
@@ -494,34 +466,6 @@ const styles = StyleSheet.create({
   },
   content: {
     lineHeight: 20,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  progressBar: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginRight: 8,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  bulletsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  bullet: {
-    marginHorizontal: 4,
   },
   dontShowAgainContainer: {
     flexDirection: 'row',
