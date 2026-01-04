@@ -16,6 +16,11 @@ import {
   Pressable,
   Dimensions,
 } from 'react-native';
+import {
+  getHintAccessibilityHint,
+  announceHintRevealed,
+} from '../utils/accessibility';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import type {
   HintConfig,
   Theme,
@@ -155,9 +160,15 @@ export function HintBubble({
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
+  // Detect user's reduce motion preference
+  const reduceMotion = useReduceMotion();
+
+  // Respect reduce motion preference
+  const shouldAnimate = animate && !reduceMotion;
+
   // Pulsing animation
   useEffect(() => {
-    if (!animate || isActive) {
+    if (!shouldAnimate || isActive) {
       pulseAnim.setValue(1);
       return;
     }
@@ -182,16 +193,24 @@ export function HintBubble({
     return () => {
       pulse.stop();
     };
-  }, [pulseAnim, animate, isActive]);
+  }, [pulseAnim, shouldAnimate, isActive]);
 
   // Fade in/out animation for tooltip
   useEffect(() => {
+    // Use instant transition if reduce motion is enabled
+    const animationDuration = reduceMotion ? 0 : 200;
+
     Animated.timing(opacityAnim, {
       toValue: isActive ? 1 : 0,
-      duration: 200,
+      duration: animationDuration,
       useNativeDriver: true,
     }).start();
-  }, [opacityAnim, isActive]);
+
+    // Announce hint content when revealed
+    if (isActive && typeof hint.content === 'string') {
+      announceHintRevealed(hint.content);
+    }
+  }, [opacityAnim, isActive, reduceMotion, hint.content]);
 
   const handleBackdropPress = useCallback(() => {
     if (closeOnOutsideClick) {
@@ -221,12 +240,19 @@ export function HintBubble({
         onPress={onPress}
         activeOpacity={0.8}
         accessible={true}
-        accessibilityLabel={`Hint: ${typeof hint.content === 'string' ? hint.content : 'Tap for more info'}`}
+        accessibilityLabel={
+          typeof hint.content === 'string'
+            ? `Hint available: ${hint.content.substring(0, 50)}${hint.content.length > 50 ? '...' : ''}`
+            : 'Hint available'
+        }
         accessibilityRole="button"
-        accessibilityHint="Double tap to show hint tooltip"
+        accessibilityHint={getHintAccessibilityHint(
+          typeof hint.content === 'string' ? hint.content : undefined
+        )}
+        accessibilityState={{ expanded: isActive }}
       >
         {/* Pulse effect (behind indicator) */}
-        {animate && !isActive && (
+        {shouldAnimate && !isActive && (
           <Animated.View
             style={[styles.pulseRing, { transform: [{ scale: pulseAnim }] }]}
           />
@@ -243,9 +269,15 @@ export function HintBubble({
         animationType="none"
         onRequestClose={onClose}
         statusBarTranslucent
+        accessibilityViewIsModal={true}
       >
         {/* Backdrop for tap-outside-to-dismiss */}
-        <Pressable style={styles.backdrop} onPress={handleBackdropPress}>
+        <Pressable
+          style={styles.backdrop}
+          onPress={handleBackdropPress}
+          accessibilityLabel="Dismiss hint"
+          accessibilityRole="button"
+        >
           <Animated.View
             style={[
               styles.tooltipContainer,
@@ -258,6 +290,14 @@ export function HintBubble({
               },
               hint.tooltipStyle,
             ]}
+            accessible={true}
+            accessibilityRole="alert"
+            accessibilityLabel={
+              typeof hint.content === 'string'
+                ? `Hint: ${hint.content}`
+                : 'Hint tooltip'
+            }
+            accessibilityLiveRegion="polite"
           >
             <Pressable onPress={(e) => e.stopPropagation()}>
               {typeof hint.content === 'string' ? (

@@ -208,9 +208,10 @@ describe('Tooltip', () => {
         totalSteps: 3,
       });
 
-      expect(getByLabelText('Next')).toBeTruthy();
-      expect(getByLabelText('Back')).toBeTruthy();
-      expect(getByLabelText('Skip')).toBeTruthy();
+      // Accessibility labels now include step information for screen readers
+      expect(getByLabelText(/Go to step 3 of 3/)).toBeTruthy(); // Next
+      expect(getByLabelText(/Go back to step 1 of 3/)).toBeTruthy(); // Back
+      expect(getByLabelText(/Skip the remaining tour/)).toBeTruthy(); // Skip
     });
   });
 });

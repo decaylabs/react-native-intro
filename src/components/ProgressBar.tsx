@@ -3,9 +3,12 @@
  *
  * Displays a horizontal progress bar showing tour completion percentage
  * along with a text indicator showing current step / total steps.
+ *
+ * Includes accessibility support for screen readers.
  */
 
 import { View, Text, StyleSheet } from 'react-native';
+import { getProgressAccessibilityValue } from '../utils/accessibility';
 import type { ProgressStyleConfig } from '../themes/types';
 
 export interface ProgressBarProps {
@@ -43,9 +46,24 @@ export function ProgressBar({
   showText = true,
 }: ProgressBarProps) {
   const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+  const accessibilityValue = getProgressAccessibilityValue(
+    currentStep,
+    totalSteps
+  );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible={true}
+      accessibilityRole="progressbar"
+      accessibilityLabel="Tour progress"
+      accessibilityValue={{
+        min: accessibilityValue.min,
+        max: accessibilityValue.max,
+        now: accessibilityValue.now,
+        text: accessibilityValue.text,
+      }}
+    >
       <View
         style={[
           styles.bar,
@@ -66,7 +84,7 @@ export function ProgressBar({
         />
       </View>
       {showText && (
-        <Text style={styles.text}>
+        <Text style={styles.text} importantForAccessibility="no">
           {currentStep + 1} / {totalSteps}
         </Text>
       )}

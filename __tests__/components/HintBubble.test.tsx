@@ -175,7 +175,8 @@ describe('HintBubble', () => {
       />
     );
 
-    expect(getByLabelText(/Hint:/)).toBeTruthy();
+    // The label now starts with "Hint available:" for better screen reader experience
+    expect(getByLabelText(/Hint available:/)).toBeTruthy();
   });
 
   describe('position calculations', () => {
