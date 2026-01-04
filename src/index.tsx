@@ -25,6 +25,7 @@ export {
   measureElement,
   measureElements,
 } from './hooks/useMeasure';
+export { useReduceMotion } from './hooks/useReduceMotion';
 
 // Context (for advanced usage)
 export { useIntroContext } from './context/useIntroContext';
@@ -38,6 +39,14 @@ export {
   validateHints,
 } from './utils/validation';
 export { calculateTooltipPosition } from './utils/positioning';
+export {
+  announceForAccessibility,
+  announceStepChange,
+  announceTourComplete,
+  announceHintRevealed,
+  isReduceMotionEnabled,
+  isScreenReaderEnabled,
+} from './utils/accessibility';
 
 // Themes
 export {

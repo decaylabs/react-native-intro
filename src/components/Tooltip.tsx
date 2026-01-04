@@ -17,6 +17,11 @@ import {
   calculateTooltipPosition,
   calculateFloatingPosition,
 } from '../utils/positioning';
+import {
+  getNavigationButtonAccessibilityLabel,
+  getTourStepAccessibilityLabel,
+  announceTourComplete,
+} from '../utils/accessibility';
 import { classicTheme } from '../themes/classic';
 import { ProgressBar } from './ProgressBar';
 import { StepBullets } from './StepBullets';
@@ -116,6 +121,9 @@ export function Tooltip({
 
       dispatch({ type: 'END_TOUR', reason: 'completed' });
 
+      // Announce tour completion for screen readers
+      announceTourComplete('completed');
+
       if (callbacks.onComplete && state.tour.id) {
         callbacks.onComplete(state.tour.id, 'completed');
       }
@@ -189,6 +197,9 @@ export function Tooltip({
 
     dispatch({ type: 'END_TOUR', reason: 'skipped' });
 
+    // Announce tour skip for screen readers
+    announceTourComplete('skipped');
+
     if (callbacks.onComplete && state.tour.id) {
       callbacks.onComplete(state.tour.id, 'skipped');
     }
@@ -255,8 +266,22 @@ export function Tooltip({
   // Determine image position
   const imagePosition = step.image?.position ?? 'top';
 
+  // Generate accessibility label for the tooltip container
+  const tooltipAccessibilityLabel = getTourStepAccessibilityLabel(
+    stepIndex,
+    totalSteps,
+    typeof step.title === 'string' ? step.title : undefined
+  );
+
   return (
-    <View style={tooltipStyle} onLayout={handleLayout}>
+    <View
+      style={tooltipStyle}
+      onLayout={handleLayout}
+      accessible={true}
+      accessibilityRole="dialog"
+      accessibilityLabel={tooltipAccessibilityLabel}
+      accessibilityViewIsModal={true}
+    >
       {/* Image at top position */}
       {step.image && imagePosition === 'top' && renderImage(step.image)}
 
@@ -347,7 +372,11 @@ export function Tooltip({
 
       {/* Navigation buttons */}
       {options.showButtons && !step.hideButtons && (
-        <View style={styles.buttonsContainer}>
+        <View
+          style={styles.buttonsContainer}
+          accessibilityRole="toolbar"
+          accessibilityLabel="Tour navigation"
+        >
           {/* Skip button (always visible except on last step) */}
           {!isLastStep && (
             <TouchableOpacity
@@ -363,7 +392,12 @@ export function Tooltip({
               ]}
               onPress={handleSkip}
               accessibilityRole="button"
-              accessibilityLabel={labels.skip}
+              accessibilityLabel={getNavigationButtonAccessibilityLabel(
+                'skip',
+                stepIndex,
+                totalSteps
+              )}
+              accessibilityHint="Exits the tour without completing all steps"
             >
               <Text
                 style={[
@@ -396,7 +430,11 @@ export function Tooltip({
                 ]}
                 onPress={handlePrev}
                 accessibilityRole="button"
-                accessibilityLabel={labels.prev}
+                accessibilityLabel={getNavigationButtonAccessibilityLabel(
+                  'prev',
+                  stepIndex,
+                  totalSteps
+                )}
               >
                 <Text
                   style={[
@@ -426,7 +464,14 @@ export function Tooltip({
               ]}
               onPress={handleNext}
               accessibilityRole="button"
-              accessibilityLabel={isLastStep ? labels.done : labels.next}
+              accessibilityLabel={getNavigationButtonAccessibilityLabel(
+                isLastStep ? 'done' : 'next',
+                stepIndex,
+                totalSteps
+              )}
+              accessibilityHint={
+                isLastStep ? 'Completes the tour' : 'Advances to the next step'
+              }
             >
               <Text
                 style={[

@@ -21,6 +21,11 @@ import { useIntroContext } from '../context/useIntroContext';
 import { AnimatedTooltip } from './AnimatedTooltip';
 import { classicTheme } from '../themes/classic';
 import { hasReanimated } from '../utils/optionalDependencies';
+import {
+  announceStepChange,
+  announceTourComplete,
+} from '../utils/accessibility';
+import { useReduceMotion } from '../hooks/useReduceMotion';
 import type { ElementMeasurement, Theme } from '../types';
 
 interface TourOverlayProps {
@@ -50,12 +55,20 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   const { tour, ui } = state;
   const currentStep = tour.steps[tour.currentStepIndex];
 
-  // Animation settings
+  // Detect user's reduce motion preference
+  const reduceMotion = useReduceMotion();
+
+  // Animation settings - respect reduce motion preference
   const animateSetting = tour.options.animate ?? 'auto';
-  const duration = tour.options.animationDuration ?? 300;
+  const duration = reduceMotion ? 0 : (tour.options.animationDuration ?? 300);
   const reanimatedAvailable = hasReanimated();
-  const shouldAnimate =
-    animateSetting === 'auto' ? reanimatedAvailable : animateSetting === true;
+
+  // Disable animations if reduce motion is enabled
+  const shouldAnimate = reduceMotion
+    ? false
+    : animateSetting === 'auto'
+      ? reanimatedAvailable
+      : animateSetting === true;
 
   // Local transition state for coordinating animations
   const [transitionState, setTransitionState] =
@@ -118,6 +131,18 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
         setDisplayedStep(currentStep);
         setDisplayedStepIndex(stepIndex);
 
+        // Announce step change for screen readers
+        announceStepChange(
+          stepIndex,
+          tour.steps.length,
+          typeof currentStep?.title === 'string'
+            ? currentStep.title
+            : undefined,
+          typeof currentStep?.content === 'string'
+            ? currentStep.content
+            : undefined
+        );
+
         // Clear spotlight for floating tooltip
         setTransitionState('morphing');
         setSpotlightMeasurement(null);
@@ -158,6 +183,16 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
       setDisplayedStep(currentStep);
       setDisplayedStepIndex(stepIndex);
 
+      // Announce step change for screen readers
+      announceStepChange(
+        stepIndex,
+        tour.steps.length,
+        typeof currentStep?.title === 'string' ? currentStep.title : undefined,
+        typeof currentStep?.content === 'string'
+          ? currentStep.content
+          : undefined
+      );
+
       // Step 4: Start morph animation to new position
       if (measurement) {
         setTransitionState('morphing');
@@ -175,6 +210,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   }, [
     tour.currentStepIndex,
     tour.state,
+    tour.steps.length,
     currentStep,
     tour.options.scrollToElement,
     shouldAnimate,
@@ -205,6 +241,9 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     }
 
     dispatch({ type: 'END_TOUR', reason: 'dismissed' });
+
+    // Announce tour dismissal for screen readers
+    announceTourComplete('dismissed');
 
     if (tourCallbacks.onComplete && tour.id) {
       tourCallbacks.onComplete(tour.id, 'dismissed');
