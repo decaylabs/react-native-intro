@@ -23,7 +23,40 @@ import {
   type ScrollableRef,
 } from 'react-native-intro';
 
-export function BasicTourScreen() {
+interface BasicTourScreenProps {
+  isDark?: boolean;
+}
+
+// Color schemes
+const Colors = {
+  light: {
+    background: '#f5f5f5',
+    surface: '#ffffff',
+    border: '#e0e0e0',
+    text: '#333333',
+    textSecondary: '#666666',
+    accent: '#007AFF',
+    // Card colors
+    cardBlue: { bg: '#E3F2FD', border: '#2196F3' },
+    cardGreen: { bg: '#E8F5E9', border: '#4CAF50' },
+    cardPurple: { bg: '#F3E5F5', border: '#9C27B0' },
+  },
+  dark: {
+    background: '#121212',
+    surface: '#1e1e1e',
+    border: '#333333',
+    text: '#ffffff',
+    textSecondary: '#a0a0a0',
+    accent: '#0a84ff',
+    // Dark card colors - muted versions
+    cardBlue: { bg: '#1a2634', border: '#2196F3' },
+    cardGreen: { bg: '#1a2e1a', border: '#4CAF50' },
+    cardPurple: { bg: '#2a1a2e', border: '#9C27B0' },
+  },
+};
+
+export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
+  const colors = isDark ? Colors.dark : Colors.light;
   const tour = useTour();
   // Use 'any' to work around complex RN 0.81 ScrollView typing
   const scrollRef = useRef<any>(null);
@@ -67,7 +100,7 @@ export function BasicTourScreen() {
 
       <ScrollView
         ref={scrollRef}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
@@ -78,31 +111,51 @@ export function BasicTourScreen() {
           title="Welcome!"
           intro="This is a demo of the react-native-intro library. Let me show you around!"
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Basic Tour Demo</Text>
-            <Text style={styles.subtitle}>
+          <View
+            style={[
+              styles.header,
+              {
+                backgroundColor: colors.surface,
+                borderBottomColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.title, { color: colors.text }]}>
+              Basic Tour Demo
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Tap the button below to start the tour
             </Text>
           </View>
         </TourStep>
 
         {/* Animation Toggle */}
-        <View style={styles.toggleContainer}>
-          <Text style={styles.toggleLabel}>Animations</Text>
+        <View
+          style={[
+            styles.toggleContainer,
+            {
+              backgroundColor: colors.surface,
+              borderBottomColor: colors.border,
+            },
+          ]}
+        >
+          <Text style={[styles.toggleLabel, { color: colors.text }]}>
+            Animations
+          </Text>
           <Switch
             value={animationsEnabled}
             onValueChange={setAnimationsEnabled}
-            trackColor={{ false: '#ccc', true: '#81b0ff' }}
-            thumbColor={animationsEnabled ? '#007AFF' : '#f4f3f4'}
+            trackColor={{ false: '#767577', true: colors.accent }}
+            thumbColor={animationsEnabled ? colors.accent : '#f4f3f4'}
           />
-          <Text style={styles.toggleStatus}>
+          <Text style={[styles.toggleStatus, { color: colors.textSecondary }]}>
             {animationsEnabled ? 'ON' : 'OFF'}
           </Text>
         </View>
 
         {/* Start Tour Button */}
         <TouchableOpacity
-          style={styles.startButton}
+          style={[styles.startButton, { backgroundColor: colors.accent }]}
           onPress={startTour}
           disabled={tour.isActive}
         >
@@ -114,7 +167,7 @@ export function BasicTourScreen() {
         {/* Tour Status */}
         {tour.isActive && (
           <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>
+            <Text style={[styles.statusText, { color: colors.accent }]}>
               Step {tour.currentStep + 1} of {tour.totalSteps}
             </Text>
           </View>
@@ -129,9 +182,24 @@ export function BasicTourScreen() {
             title="Feature Highlight"
             intro="Each feature card can be highlighted with a spotlight effect and tooltip."
           >
-            <View style={[styles.card, styles.cardBlue]}>
-              <Text style={styles.cardTitle}>Fast Setup</Text>
-              <Text style={styles.cardDescription}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colors.cardBlue.bg,
+                  borderLeftColor: colors.cardBlue.border,
+                },
+              ]}
+            >
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                Fast Setup
+              </Text>
+              <Text
+                style={[
+                  styles.cardDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Add guided tours to your app with minimal configuration.
               </Text>
             </View>
@@ -171,18 +239,48 @@ export function BasicTourScreen() {
               color: '#69F0AE',
             }}
           >
-            <View style={[styles.card, styles.cardGreen]}>
-              <Text style={styles.cardTitle}>Customizable</Text>
-              <Text style={styles.cardDescription}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colors.cardGreen.bg,
+                  borderLeftColor: colors.cardGreen.border,
+                },
+              ]}
+            >
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                Customizable
+              </Text>
+              <Text
+                style={[
+                  styles.cardDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Customize colors, themes, and button labels to match your app.
               </Text>
             </View>
           </TourStep>
 
           <TourStep id="feature-3">
-            <View style={[styles.card, styles.cardPurple]}>
-              <Text style={styles.cardTitle}>Native Feel</Text>
-              <Text style={styles.cardDescription}>
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: colors.cardPurple.bg,
+                  borderLeftColor: colors.cardPurple.border,
+                },
+              ]}
+            >
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                Native Feel
+              </Text>
+              <Text
+                style={[
+                  styles.cardDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Built specifically for React Native with smooth animations.
               </Text>
             </View>
@@ -212,8 +310,16 @@ export function BasicTourScreen() {
           title="Auto-Scroll"
           intro="The tour automatically scrolls to bring off-screen elements into view. Pretty cool, right?"
         >
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>
+          <View
+            style={[
+              styles.infoContainer,
+              isDark && {
+                backgroundColor: '#3D2C00',
+                borderLeftColor: '#FF9800',
+              },
+            ]}
+          >
+            <Text style={[styles.infoText, isDark && { color: '#FFB74D' }]}>
               The tour highlights each TourStep component in sequence, showing a
               spotlight overlay and tooltip with navigation controls.
             </Text>
@@ -228,10 +334,14 @@ export function BasicTourScreen() {
           onRequestClose={() => setShowCompletionModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+            <View
+              style={[styles.modalContent, { backgroundColor: colors.surface }]}
+            >
               <Text style={styles.modalEmoji}>🎉</Text>
-              <Text style={styles.modalTitle}>Tour Complete!</Text>
-              <Text style={styles.modalText}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Tour Complete!
+              </Text>
+              <Text style={[styles.modalText, { color: colors.textSecondary }]}>
                 You've successfully completed the onboarding tour. You're now
                 ready to explore the app!
               </Text>

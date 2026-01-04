@@ -47,7 +47,9 @@ export {
   themes,
   getTheme,
   mergeTheme,
+  createTheme,
   resolveTheme,
+  resolveThemeWithColorScheme,
 } from './themes';
 
 // Types

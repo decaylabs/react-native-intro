@@ -10,7 +10,7 @@ import {
   useMemo,
   type RefObject,
 } from 'react';
-import { View } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import {
   IntroContext,
   initialIntroState,
@@ -29,7 +29,12 @@ import {
 } from '../utils/storage';
 import { scrollToElement as scrollToElementUtil } from '../utils/scrolling';
 import { TourOverlay } from './TourOverlay';
-import { classicTheme, modernTheme, darkTheme, resolveTheme } from '../themes';
+import {
+  classicTheme,
+  modernTheme,
+  darkTheme,
+  resolveThemeWithColorScheme,
+} from '../themes';
 import type {
   IntroProviderProps,
   TourCallbacks,
@@ -58,8 +63,15 @@ export function IntroProvider({
   storageAdapter: customStorageAdapter,
   disablePersistence = false,
 }: IntroProviderProps) {
-  // Resolve theme
-  const resolvedTheme: Theme = useMemo(() => resolveTheme(theme), [theme]);
+  // Get system color scheme for 'auto' theme
+  const colorScheme = useColorScheme();
+  const safeColorScheme = colorScheme === 'dark' ? 'dark' : 'light';
+
+  // Resolve theme (supports 'auto' for system color scheme)
+  const resolvedTheme: Theme = useMemo(
+    () => resolveThemeWithColorScheme(theme, safeColorScheme),
+    [theme, safeColorScheme]
+  );
 
   // State management
   const [state, dispatch] = useReducer(introReducer, initialIntroState);
