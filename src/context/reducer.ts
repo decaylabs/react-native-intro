@@ -31,6 +31,7 @@ export function introReducer(
           currentStepIndex: 0,
           steps: action.steps,
           options: { ...defaultTourOptions, ...action.options },
+          dontShowAgainChecked: false,
         },
         ui: {
           ...state.ui,
@@ -132,6 +133,16 @@ export function introReducer(
         ui: {
           ...state.ui,
           isTransitioning: action.isTransitioning,
+        },
+      };
+    }
+
+    case 'SET_DONT_SHOW_AGAIN': {
+      return {
+        ...state,
+        tour: {
+          ...state.tour,
+          dontShowAgainChecked: action.checked,
         },
       };
     }

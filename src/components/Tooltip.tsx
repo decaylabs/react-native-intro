@@ -57,9 +57,11 @@ export function Tooltip({
   theme = classicTheme,
 }: TooltipProps) {
   const { dispatch, tourCallbacks, state } = useIntroContext();
-  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [tooltipSize, setTooltipSize] = useState({ width: 0, height: 0 });
   const [hasMeasured, setHasMeasured] = useState(false);
+
+  // Use context state for "Don't show again" checkbox (persists across steps)
+  const dontShowAgain = state.tour.dontShowAgainChecked;
 
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === totalSteps - 1;
@@ -212,8 +214,8 @@ export function Tooltip({
   ]);
 
   const handleDontShowAgainToggle = useCallback(() => {
-    setDontShowAgain((prev) => !prev);
-  }, []);
+    dispatch({ type: 'SET_DONT_SHOW_AGAIN', checked: !dontShowAgain });
+  }, [dispatch, dontShowAgain]);
 
   // Get button labels
   const labels = {
@@ -516,28 +518,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
+    paddingVertical: 4,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#ccc',
-    marginRight: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 3,
+    borderWidth: 1.5,
+    borderColor: '#999',
+    marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxChecked: {
-    borderColor: 'transparent',
+    borderWidth: 0,
   },
   checkmark: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: 'bold',
+    lineHeight: 13,
+    textAlign: 'center',
   },
   dontShowAgainText: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
   },
   buttonsContainer: {
     flexDirection: 'row',

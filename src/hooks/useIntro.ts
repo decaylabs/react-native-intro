@@ -281,6 +281,14 @@ export function useIntro(): UseIntroReturn {
         }
       }
 
+      // Check if a tour is already active - ignore the start request
+      if (state.tour.state === 'active') {
+        console.warn(
+          `[react-native-intro] Cannot start tour "${tourId}" - a tour is already active. Stop the current tour first.`
+        );
+        return;
+      }
+
       // Check if tour is dismissed
       if (state.persistence.dismissedTours.has(tourId)) {
         return;
@@ -316,6 +324,7 @@ export function useIntro(): UseIntroReturn {
       }
     },
     [
+      state.tour.state,
       state.persistence.dismissedTours,
       context.tourCallbacks,
       dispatch,

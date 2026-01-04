@@ -260,6 +260,7 @@ export function IntroProvider({
     () => ({
       state,
       dispatch,
+      theme: resolvedTheme,
       registerStep,
       unregisterStep,
       registerHint,
@@ -277,6 +278,7 @@ export function IntroProvider({
     }),
     [
       state,
+      resolvedTheme,
       registerStep,
       unregisterStep,
       registerHint,

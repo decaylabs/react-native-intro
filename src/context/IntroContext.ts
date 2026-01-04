@@ -17,6 +17,7 @@ import type {
   HintPosition,
   HintType,
 } from '../types';
+import type { Theme } from '../themes/types';
 
 /**
  * ScrollView-like interface for scroll registration
@@ -75,6 +76,8 @@ export interface IntroState {
     currentStepIndex: number;
     steps: StepConfig[];
     options: TourOptions;
+    /** Whether the "Don't show again" checkbox is checked (persists across steps) */
+    dontShowAgainChecked: boolean;
   };
 
   // Hints state
@@ -145,6 +148,7 @@ export const initialIntroState: IntroState = {
     currentStepIndex: 0,
     steps: [],
     options: defaultTourOptions,
+    dontShowAgainChecked: false,
   },
   hints: {
     visible: false,
@@ -174,6 +178,7 @@ export const initialIntroState: IntroState = {
 export interface IntroContextValue {
   state: IntroState;
   dispatch: React.Dispatch<IntroAction>;
+  theme: Theme;
 
   // Registry methods
   registerStep: (
@@ -222,6 +227,7 @@ export type IntroAction =
   | { type: 'PREV_STEP' }
   | { type: 'GO_TO_STEP'; stepIndex: number }
   | { type: 'END_TOUR'; reason: 'completed' | 'skipped' | 'dismissed' }
+  | { type: 'SET_DONT_SHOW_AGAIN'; checked: boolean }
   | { type: 'SET_TRANSITIONING'; isTransitioning: boolean }
   | { type: 'SHOW_TOOLTIP' }
   | { type: 'HIDE_TOOLTIP' }

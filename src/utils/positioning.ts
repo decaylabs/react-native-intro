@@ -37,8 +37,9 @@ const DEFAULT_PADDING = 10;
 
 /**
  * Gap between target element and tooltip
+ * Must be larger than spotlight padding (8px) to avoid overlap
  */
-const DEFAULT_GAP = 10;
+const DEFAULT_GAP = 16;
 
 /**
  * Try to position tooltip at a specific position

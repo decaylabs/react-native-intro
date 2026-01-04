@@ -145,12 +145,8 @@ export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
           <Switch
             value={animationsEnabled}
             onValueChange={setAnimationsEnabled}
-            trackColor={{ false: '#767577', true: colors.accent }}
-            thumbColor={animationsEnabled ? colors.accent : '#f4f3f4'}
+            trackColor={{ true: colors.accent }}
           />
-          <Text style={[styles.toggleStatus, { color: colors.textSecondary }]}>
-            {animationsEnabled ? 'ON' : 'OFF'}
-          </Text>
         </View>
 
         {/* Start Tour Button */}
@@ -401,24 +397,17 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    gap: 12,
   },
   toggleLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
-  },
-  toggleStatus: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-    minWidth: 30,
   },
   startButton: {
     margin: 20,
