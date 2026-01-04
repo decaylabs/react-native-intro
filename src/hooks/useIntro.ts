@@ -1,5 +1,44 @@
 /**
  * useIntro hook - Main programmatic control for tours and hints
+ *
+ * This is the primary hook for controlling tours and hints programmatically.
+ * It provides complete control over the tour lifecycle, navigation, and state.
+ *
+ * ## Tour API
+ *
+ * ### State Properties
+ * - `tour.isActive` - Whether a tour is currently running
+ * - `tour.tourId` - Current tour ID or null
+ * - `tour.currentStep` - Current step index (0-based)
+ * - `tour.totalSteps` - Total number of steps
+ * - `tour.currentStepConfig` - Full config of current step or null
+ * - `tour.isTransitioning` - Whether the tour is animating between steps
+ *
+ * ### Control Methods
+ * - `tour.start(tourId?, steps?, options?)` - Start a tour
+ * - `tour.next()` - Go to next step (ends tour if on last step)
+ * - `tour.prev()` - Go to previous step
+ * - `tour.goTo(stepIndex)` - Jump to specific step by index
+ * - `tour.stop(reason?)` - Stop the tour
+ * - `tour.restart()` - Restart from step 0
+ * - `tour.refresh()` - Re-measure all target elements
+ * - `tour.isDismissed(tourId)` - Check if tour was dismissed
+ * - `tour.clearDismissed(tourId)` - Clear dismissed state
+ *
+ * ## Hints API
+ *
+ * ### State Properties
+ * - `hints.isVisible` - Whether hints are visible
+ * - `hints.activeHintId` - Currently active hint ID or null
+ * - `hints.hints` - Array of all hint configs
+ *
+ * ### Control Methods
+ * - `hints.show(hints?, options?)` - Show hints
+ * - `hints.hide()` - Hide all hints
+ * - `hints.showHint(hintId)` - Show specific hint tooltip
+ * - `hints.hideHint(hintId)` - Hide specific hint tooltip
+ * - `hints.removeHint(hintId)` - Remove a hint entirely
+ * - `hints.refresh()` - Re-measure all hint targets
  */
 
 import { useContext, useCallback, useMemo } from 'react';
@@ -24,7 +63,7 @@ import type {
  * @throws Error if used outside of IntroProvider
  * @returns Tour and hint controls, state, and callback setters
  *
- * @example
+ * @example Basic Tour Control
  * ```tsx
  * function MyComponent() {
  *   const { tour, hints, callbacks } = useIntro();
@@ -37,6 +76,122 @@ import type {
  *   };
  *
  *   return <Button onPress={startTour} title="Start Tour" />;
+ * }
+ * ```
+ *
+ * @example Programmatic Navigation
+ * ```tsx
+ * function TourControls() {
+ *   const { tour } = useIntro();
+ *
+ *   return (
+ *     <View style={{ flexDirection: 'row', gap: 8 }}>
+ *       <Button title="Prev" onPress={() => tour.prev()} />
+ *       <Text>{tour.currentStep + 1} / {tour.totalSteps}</Text>
+ *       <Button title="Next" onPress={() => tour.next()} />
+ *       <Button title="Go to Step 3" onPress={() => tour.goTo(2)} />
+ *       <Button title="Restart" onPress={() => tour.restart()} />
+ *     </View>
+ *   );
+ * }
+ * ```
+ *
+ * @example Query Tour State
+ * ```tsx
+ * function TourStatus() {
+ *   const { tour } = useIntro();
+ *
+ *   if (!tour.isActive) {
+ *     return <Text>No tour running</Text>;
+ *   }
+ *
+ *   return (
+ *     <View>
+ *       <Text>Tour: {tour.tourId}</Text>
+ *       <Text>Step: {tour.currentStep + 1} of {tour.totalSteps}</Text>
+ *       <Text>Title: {tour.currentStepConfig?.title}</Text>
+ *     </View>
+ *   );
+ * }
+ * ```
+ *
+ * @example Handle Dismissed Tours
+ * ```tsx
+ * function App() {
+ *   const { tour } = useIntro();
+ *
+ *   const handleStartTour = () => {
+ *     if (tour.isDismissed('onboarding')) {
+ *       // Tour was previously dismissed with "Don't show again"
+ *       Alert.alert('Re-show tour?', 'Would you like to see the tour again?', [
+ *         { text: 'No', style: 'cancel' },
+ *         {
+ *           text: 'Yes',
+ *           onPress: () => {
+ *             tour.clearDismissed('onboarding');
+ *             tour.start('onboarding');
+ *           },
+ *         },
+ *       ]);
+ *       return;
+ *     }
+ *     tour.start('onboarding');
+ *   };
+ *
+ *   return <Button title="Start Tour" onPress={handleStartTour} />;
+ * }
+ * ```
+ *
+ * @example Using Callbacks
+ * ```tsx
+ * function MyComponent() {
+ *   const { tour, callbacks } = useIntro();
+ *
+ *   useEffect(() => {
+ *     callbacks.setTourCallbacks({
+ *       onStart: (tourId) => console.log('Tour started:', tourId),
+ *       onChange: (newStep, oldStep) => console.log(`Step ${oldStep} -> ${newStep}`),
+ *       onBeforeChange: async (current, next, direction) => {
+ *         // Return false to prevent navigation
+ *         if (next === 2 && !formIsValid) {
+ *           Alert.alert('Please complete the form first');
+ *           return false;
+ *         }
+ *         return true;
+ *       },
+ *       onComplete: (tourId, reason) => {
+ *         console.log(`Tour ${tourId} ended: ${reason}`);
+ *         // reason: 'completed' | 'skipped' | 'dismissed'
+ *       },
+ *     });
+ *   }, [callbacks]);
+ *
+ *   return <Button title="Start" onPress={() => tour.start()} />;
+ * }
+ * ```
+ *
+ * @example Re-measure After Layout Changes
+ * ```tsx
+ * function DynamicContent() {
+ *   const { tour } = useIntro();
+ *   const [expanded, setExpanded] = useState(false);
+ *
+ *   const toggleExpand = () => {
+ *     setExpanded(!expanded);
+ *     // Re-measure after layout changes
+ *     setTimeout(() => tour.refresh(), 100);
+ *   };
+ *
+ *   return (
+ *     <View>
+ *       <TourStep id="expandable" intro="This section expands">
+ *         <Pressable onPress={toggleExpand}>
+ *           <Text>Tap to {expanded ? 'collapse' : 'expand'}</Text>
+ *           {expanded && <Text>Additional content here...</Text>}
+ *         </Pressable>
+ *       </TourStep>
+ *     </View>
+ *   );
  * }
  * ```
  */
