@@ -11,6 +11,8 @@ export { TourStep, TourStepRef } from './components/TourStep';
 export { HintSpot, HintSpotRef } from './components/HintSpot';
 export { TourOverlay } from './components/TourOverlay';
 export { Tooltip } from './components/Tooltip';
+export { ProgressBar } from './components/ProgressBar';
+export { StepBullets } from './components/StepBullets';
 export { HintBubble, HintIndicator } from './components/HintBubble';
 
 // Hooks
