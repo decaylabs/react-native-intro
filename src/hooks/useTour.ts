@@ -112,7 +112,9 @@ export function useTour(): UseTourReturn {
         title: step.props.title,
         position: step.props.position,
         disableInteraction: step.props.disableInteraction,
+        hideButtons: step.props.hideButtons,
         tooltipStyle: step.props.tooltipStyle,
+        tooltipTitleStyle: step.props.tooltipTitleStyle,
         tooltipTextStyle: step.props.tooltipTextStyle,
       }));
     },

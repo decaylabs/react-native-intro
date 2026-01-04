@@ -66,7 +66,9 @@ export function TourStep({
   position,
   disableInteraction,
   group,
+  hideButtons,
   tooltipStyle,
+  tooltipTitleStyle,
   tooltipTextStyle,
   style,
 }: TourStepPropsWithStyle) {
@@ -82,7 +84,10 @@ export function TourStep({
     if (disableInteraction !== undefined)
       config.disableInteraction = disableInteraction;
     if (group !== undefined) config.group = group;
+    if (hideButtons !== undefined) config.hideButtons = hideButtons;
     if (tooltipStyle !== undefined) config.tooltipStyle = tooltipStyle;
+    if (tooltipTitleStyle !== undefined)
+      config.tooltipTitleStyle = tooltipTitleStyle;
     if (tooltipTextStyle !== undefined)
       config.tooltipTextStyle = tooltipTextStyle;
     return Object.keys(config).length > 0 ? config : undefined;
@@ -92,7 +97,9 @@ export function TourStep({
     position,
     disableInteraction,
     group,
+    hideButtons,
     tooltipStyle,
+    tooltipTitleStyle,
     tooltipTextStyle,
   ]);
 

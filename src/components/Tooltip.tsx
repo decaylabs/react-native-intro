@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Image,
   type ViewStyle,
   type LayoutChangeEvent,
 } from 'react-native';
@@ -17,6 +18,7 @@ import { calculateTooltipPosition } from '../utils/positioning';
 import { classicTheme } from '../themes/classic';
 import type {
   StepConfig,
+  StepImageConfig,
   TourOptions,
   Theme,
   ElementMeasurement,
@@ -228,8 +230,35 @@ export function Tooltip({
     ...options.tooltipStyle,
   };
 
+  // Render image component if provided
+  const renderImage = (imageConfig: StepImageConfig) => {
+    const imageStyle: ViewStyle = {
+      width: imageConfig.width ?? '100%',
+      height: imageConfig.height ?? 150,
+      borderRadius: imageConfig.borderRadius ?? 8,
+      overflow: 'hidden',
+    };
+
+    return (
+      <View style={[styles.imageContainer, imageStyle]}>
+        <Image
+          source={imageConfig.source}
+          style={styles.image}
+          resizeMode={imageConfig.resizeMode ?? 'cover'}
+          accessibilityLabel={imageConfig.alt}
+        />
+      </View>
+    );
+  };
+
+  // Determine image position
+  const imagePosition = step.image?.position ?? 'top';
+
   return (
     <View style={tooltipStyle} onLayout={handleLayout}>
+      {/* Image at top position */}
+      {step.image && imagePosition === 'top' && renderImage(step.image)}
+
       {/* Title */}
       {step.title && (
         <Text
@@ -240,6 +269,10 @@ export function Tooltip({
               fontSize: theme.tooltip.titleFontSize,
               fontWeight: theme.tooltip.titleFontWeight,
             },
+            // Add margin top if image is above
+            step.image && imagePosition === 'top' && styles.titleAfterImage,
+            // Per-step title style override
+            step.tooltipTitleStyle,
           ]}
         >
           {step.title}
@@ -265,6 +298,9 @@ export function Tooltip({
           step.content
         )}
       </View>
+
+      {/* Image at bottom position */}
+      {step.image && imagePosition === 'bottom' && renderImage(step.image)}
 
       {/* Progress indicator */}
       {options.showProgress && (
@@ -441,8 +477,18 @@ export function Tooltip({
 }
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    marginBottom: 12,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
   title: {
     marginBottom: 8,
+  },
+  titleAfterImage: {
+    marginTop: 4,
   },
   contentContainer: {
     marginBottom: 12,

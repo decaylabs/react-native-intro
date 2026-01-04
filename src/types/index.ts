@@ -15,6 +15,7 @@ export type {
 export type {
   TourState,
   StepConfig,
+  StepImageConfig,
   TourControls,
   TourStateInfo,
 } from './tour';

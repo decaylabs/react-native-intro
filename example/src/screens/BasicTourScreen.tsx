@@ -1,5 +1,9 @@
 /**
  * BasicTourScreen - Demo screen showing basic tour functionality
+ *
+ * Demonstrates props-based tour configuration where step content
+ * is defined on TourStep components and global options are passed
+ * to tour.start().
  */
 
 import { useRef, useState } from 'react';
@@ -44,60 +48,12 @@ export function BasicTourScreen() {
   };
 
   const startTour = () => {
-    tour.start(
-      'basic-tour',
-      [
-        {
-          id: 'step-1',
-          targetId: 'welcome-header',
-          title: 'Welcome!',
-          content:
-            'This is a demo of the react-native-intro library. Let me show you around!',
-        },
-        {
-          id: 'step-2',
-          targetId: 'info-text',
-          title: 'Auto-Scroll',
-          content:
-            'The tour automatically scrolls to bring off-screen elements into view. Pretty cool, right?',
-        },
-        {
-          id: 'step-3',
-          targetId: 'feature-1',
-          title: 'Feature Highlight',
-          content:
-            'Each feature card can be highlighted with a spotlight effect and tooltip.',
-        },
-        {
-          id: 'step-4',
-          targetId: 'feature-2',
-          title: 'Multiple Steps',
-          content:
-            'Tours can have multiple steps. Navigate with the Next and Back buttons.',
-        },
-        {
-          id: 'step-5',
-          targetId: 'fab-button',
-          title: 'Small Elements',
-          content:
-            'The spotlight can highlight small elements too, like this floating action button!',
-        },
-        {
-          id: 'step-6',
-          targetId: 'action-button',
-          title: 'Try It Out!',
-          content:
-            'Go ahead and tap the "Get Started" button below to complete the tour!',
-          hideButtons: true,
-        },
-      ],
-      {
-        // Pass animation setting based on toggle
-        animate: animationsEnabled,
-        // Slower animations for dramatic effect
-        animationDuration: 500,
-      }
-    );
+    // Props-based: tour.start() uses step props from TourStep components
+    // Global options can be passed directly
+    tour.start({
+      animate: animationsEnabled,
+      animationDuration: 500,
+    });
   };
 
   return (
@@ -108,8 +64,13 @@ export function BasicTourScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        {/* Header */}
-        <TourStep id="welcome-header">
+        {/* Header - Step 1 */}
+        <TourStep
+          id="welcome-header"
+          order={1}
+          title="Welcome!"
+          intro="This is a demo of the react-native-intro library. Let me show you around!"
+        >
           <View style={styles.header}>
             <Text style={styles.title}>Basic Tour Demo</Text>
             <Text style={styles.subtitle}>
@@ -154,18 +115,57 @@ export function BasicTourScreen() {
 
         {/* Feature Cards */}
         <View style={styles.cardsContainer}>
-          <TourStep id="feature-1">
+          {/* Step 3 - Fast Setup */}
+          <TourStep
+            id="feature-1"
+            order={3}
+            title="Feature Highlight"
+            intro="Each feature card can be highlighted with a spotlight effect and tooltip."
+          >
             <View style={[styles.card, styles.cardBlue]}>
-              <Text style={styles.cardTitle}>🚀 Fast Setup</Text>
+              <Text style={styles.cardTitle}>Fast Setup</Text>
               <Text style={styles.cardDescription}>
                 Add guided tours to your app with minimal configuration.
               </Text>
             </View>
           </TourStep>
 
-          <TourStep id="feature-2">
+          {/* Step 4 - Customizable (with custom tooltip styling) */}
+          <TourStep
+            id="feature-2"
+            order={4}
+            title="🎨 Customizable Tooltips"
+            intro={
+              <View>
+                <Text style={tourStepStyles.customContent}>
+                  This tooltip demonstrates{' '}
+                  <Text style={tourStepStyles.highlight}>custom styling</Text>!
+                </Text>
+                <View style={tourStepStyles.featureList}>
+                  <Text style={tourStepStyles.featureItem}>
+                    Custom background colors
+                  </Text>
+                  <Text style={tourStepStyles.featureItem}>
+                    Rich ReactNode content
+                  </Text>
+                  <Text style={tourStepStyles.featureItem}>
+                    Styled text and layouts
+                  </Text>
+                </View>
+              </View>
+            }
+            tooltipStyle={{
+              backgroundColor: '#1a1a2e',
+              borderRadius: 16,
+              borderWidth: 2,
+              borderColor: '#4CAF50',
+            }}
+            tooltipTitleStyle={{
+              color: '#69F0AE',
+            }}
+          >
             <View style={[styles.card, styles.cardGreen]}>
-              <Text style={styles.cardTitle}>🎨 Customizable</Text>
+              <Text style={styles.cardTitle}>Customizable</Text>
               <Text style={styles.cardDescription}>
                 Customize colors, themes, and button labels to match your app.
               </Text>
@@ -174,7 +174,7 @@ export function BasicTourScreen() {
 
           <TourStep id="feature-3">
             <View style={[styles.card, styles.cardPurple]}>
-              <Text style={styles.cardTitle}>📱 Native Feel</Text>
+              <Text style={styles.cardTitle}>Native Feel</Text>
               <Text style={styles.cardDescription}>
                 Built specifically for React Native with smooth animations.
               </Text>
@@ -182,8 +182,14 @@ export function BasicTourScreen() {
           </TourStep>
         </View>
 
-        {/* Action Button */}
-        <TourStep id="action-button">
+        {/* Action Button - Step 6 */}
+        <TourStep
+          id="action-button"
+          order={6}
+          title="Try It Out!"
+          intro='Go ahead and tap the "Get Started" button below to complete the tour!'
+          hideButtons
+        >
           <TouchableOpacity
             style={styles.actionButton}
             onPress={handleGetStarted}
@@ -192,8 +198,13 @@ export function BasicTourScreen() {
           </TouchableOpacity>
         </TourStep>
 
-        {/* Additional info */}
-        <TourStep id="info-text">
+        {/* Additional info - Step 2 */}
+        <TourStep
+          id="info-text"
+          order={2}
+          title="Auto-Scroll"
+          intro="The tour automatically scrolls to bring off-screen elements into view. Pretty cool, right?"
+        >
           <View style={styles.infoContainer}>
             <Text style={styles.infoText}>
               The tour highlights each TourStep component in sequence, showing a
@@ -228,8 +239,14 @@ export function BasicTourScreen() {
         </Modal>
       </ScrollView>
 
-      {/* FAB - Floating Action Button */}
-      <TourStep id="fab-button" style={styles.fabWrapper}>
+      {/* FAB - Floating Action Button - Step 5 */}
+      <TourStep
+        id="fab-button"
+        order={5}
+        title="Small Elements"
+        intro="The spotlight can highlight small elements too, like this floating action button!"
+        style={styles.fabWrapper}
+      >
         <TouchableOpacity style={styles.fabButton} activeOpacity={0.8}>
           <Text style={styles.fabIcon}>+</Text>
         </TouchableOpacity>
@@ -435,5 +452,29 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '300',
     marginTop: -2,
+  },
+});
+
+// Custom styles for the customizable tour step (step 4)
+const tourStepStyles = StyleSheet.create({
+  customContent: {
+    fontSize: 15,
+    color: '#e0e0e0',
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  highlight: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  featureList: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+  },
+  featureItem: {
+    fontSize: 14,
+    color: '#b0b0b0',
+    marginBottom: 6,
   },
 });
