@@ -8,13 +8,15 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   Image,
   type ViewStyle,
   type LayoutChangeEvent,
 } from 'react-native';
 import { useIntroContext } from '../context/useIntroContext';
-import { calculateTooltipPosition } from '../utils/positioning';
+import {
+  calculateTooltipPosition,
+  calculateFloatingPosition,
+} from '../utils/positioning';
 import { classicTheme } from '../themes/classic';
 import type {
   StepConfig,
@@ -24,8 +26,6 @@ import type {
   ElementMeasurement,
   TooltipPosition,
 } from '../types';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface TooltipProps {
   step: StepConfig;
@@ -71,24 +71,23 @@ export function Tooltip({
 
   // Calculate tooltip position based on actual measured size
   const tooltipPosition = useMemo(() => {
-    const preferredPosition: TooltipPosition = step.position ?? 'auto';
-
-    // Use default measurement if null (for floating tooltips)
-    const measurement: ElementMeasurement = targetMeasurement ?? {
-      x: SCREEN_WIDTH / 2 - theme.tooltip.maxWidth / 2,
-      y: SCREEN_HEIGHT / 2 - 100,
-      width: 0,
-      height: 0,
-      measured: false,
-      timestamp: Date.now(),
-    };
-
     // Use actual measured size if available, otherwise estimate
     const actualSize = hasMeasured
       ? tooltipSize
       : { width: theme.tooltip.maxWidth, height: 250 }; // Better initial estimate
 
-    return calculateTooltipPosition(measurement, actualSize, preferredPosition);
+    // Floating tooltip (no target measurement) - center on screen
+    if (!targetMeasurement) {
+      return calculateFloatingPosition(actualSize);
+    }
+
+    // Normal tooltip - position relative to target
+    const preferredPosition: TooltipPosition = step.position ?? 'auto';
+    return calculateTooltipPosition(
+      targetMeasurement,
+      actualSize,
+      preferredPosition
+    );
   }, [
     targetMeasurement,
     step.position,

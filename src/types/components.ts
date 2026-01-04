@@ -56,8 +56,8 @@ export interface TourStepProps {
   /** Unique ID to reference this step target */
   id: string;
 
-  /** Child element to wrap */
-  children: ReactNode;
+  /** Child element to wrap (not required for floating steps) */
+  children?: ReactNode;
 
   /** Step order (1-indexed, lower = earlier) */
   order?: number;
@@ -88,6 +88,12 @@ export interface TourStepProps {
 
   /** Custom styles for this step's tooltip text (only applies to string content) */
   tooltipTextStyle?: TextStyle;
+
+  /**
+   * Floating step - shows centered tooltip without highlighting any element.
+   * When true, children prop is not required.
+   */
+  floating?: boolean;
 }
 
 /**
@@ -127,7 +133,7 @@ export interface HintSpotProps {
  * Internal registry entry for TourStep
  */
 export interface StepRegistryEntry {
-  ref: RefObject<View>;
+  ref: RefObject<View | null>;
   order: number;
   measurement: ElementMeasurement | null;
   /** Props-based step configuration */
@@ -141,6 +147,7 @@ export interface StepRegistryEntry {
     tooltipStyle?: ViewStyle;
     tooltipTitleStyle?: TextStyle;
     tooltipTextStyle?: TextStyle;
+    floating?: boolean;
   };
 }
 

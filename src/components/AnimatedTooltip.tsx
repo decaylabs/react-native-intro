@@ -86,16 +86,16 @@ function FallbackAnimatedTooltip({
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.spring(scale, {
+        Animated.timing(scale, {
           toValue: 1,
-          damping: 15,
-          stiffness: 150,
+          duration,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-        Animated.spring(translateY, {
+        Animated.timing(translateY, {
           toValue: 0,
-          damping: 15,
-          stiffness: 150,
+          duration,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start();
