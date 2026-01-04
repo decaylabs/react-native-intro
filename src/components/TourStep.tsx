@@ -59,13 +59,12 @@ interface TourStepPropsWithStyle extends TourStepProps {
  *
  * @example
  * ```tsx
- * // Floating step (no target element)
+ * // Floating step (no children = floating tooltip)
  * // Perfect for welcome messages or intro screens
  *
  * <TourStep
  *   id="welcome"
  *   order={1}
- *   floating
  *   title="Welcome!"
  *   intro="This is a floating tooltip that appears centered on screen."
  * />
@@ -84,9 +83,12 @@ export function TourStep({
   tooltipStyle,
   tooltipTitleStyle,
   tooltipTextStyle,
-  floating,
+  floating: floatingProp,
   style,
 }: TourStepPropsWithStyle) {
+  // Infer floating from absence of children (or explicit prop)
+  const isFloating = floatingProp ?? !children;
+
   // Use 'any' to work around complex RN 0.81 View typing issues
   const viewRef = useRef<any>(null);
   // Floating steps don't need a ref since there's no element to measure
@@ -108,7 +110,7 @@ export function TourStep({
       config.tooltipTitleStyle = tooltipTitleStyle;
     if (tooltipTextStyle !== undefined)
       config.tooltipTextStyle = tooltipTextStyle;
-    if (floating !== undefined) config.floating = floating;
+    if (isFloating) config.floating = true;
     return Object.keys(config).length > 0 ? config : undefined;
   }, [
     intro,
@@ -120,21 +122,21 @@ export function TourStep({
     tooltipStyle,
     tooltipTitleStyle,
     tooltipTextStyle,
-    floating,
+    isFloating,
   ]);
 
   // Register on mount, unregister on unmount
   useEffect(() => {
     // Use null ref for floating steps (no element to measure)
-    registerStep(id, floating ? floatingRef : viewRef, order, propsConfig);
+    registerStep(id, isFloating ? floatingRef : viewRef, order, propsConfig);
 
     return () => {
       unregisterStep(id);
     };
-  }, [id, order, propsConfig, floating, registerStep, unregisterStep]);
+  }, [id, order, propsConfig, isFloating, registerStep, unregisterStep]);
 
   // Floating steps don't render anything
-  if (floating) {
+  if (isFloating) {
     return null;
   }
 

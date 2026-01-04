@@ -91,7 +91,8 @@ export interface TourStepProps {
 
   /**
    * Floating step - shows centered tooltip without highlighting any element.
-   * When true, children prop is not required.
+   * Automatically inferred when children is not provided.
+   * Can be explicitly set to override the inference.
    */
   floating?: boolean;
 }

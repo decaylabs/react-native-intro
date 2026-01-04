@@ -57,11 +57,10 @@ export function BasicTourScreen() {
 
   return (
     <View style={styles.screenContainer}>
-      {/* Floating Welcome Step - no element, just a centered tooltip */}
+      {/* Floating Welcome Step - no children means floating tooltip */}
       <TourStep
         id="floating-welcome"
         order={0}
-        floating
         title="Welcome to the Tour!"
         intro="This is a floating tooltip - it appears centered on screen without highlighting any element. Perfect for welcome messages!"
       />
@@ -142,7 +141,7 @@ export function BasicTourScreen() {
           <TourStep
             id="feature-2"
             order={4}
-            title="Customizable Tooltips"
+            title="🎨 Customizable Tooltips"
             intro={
               <View>
                 <Text style={tourStepStyles.customContent}>
