@@ -20,8 +20,9 @@ import {
 import { BasicTourScreen } from './screens/BasicTourScreen';
 import { HintsScreen } from './screens/HintsScreen';
 import { ThemesScreen } from './screens/ThemesScreen';
+import { AdvancedScreen } from './screens/AdvancedScreen';
 
-type TabName = 'tours' | 'hints' | 'themes';
+type TabName = 'tours' | 'hints' | 'themes' | 'advanced';
 
 // Tab bar height (paddingVertical * 2 + icon + label + margins)
 const TAB_BAR_HEIGHT = 70;
@@ -85,6 +86,7 @@ function AppContent() {
               isDark={isDark}
             />
           )}
+          {activeTab === 'advanced' && <AdvancedScreen isDark={isDark} />}
         </View>
 
         {/* Tab Bar */}
@@ -157,6 +159,27 @@ function AppContent() {
               ]}
             >
               Themes
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tab,
+              activeTab === 'advanced' && {
+                backgroundColor: colors.tabActiveBackground,
+              },
+            ]}
+            onPress={() => setActiveTab('advanced')}
+          >
+            <Text style={styles.tabIcon}>⚡</Text>
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: colors.textSecondary },
+                activeTab === 'advanced' && { color: colors.accent },
+              ]}
+            >
+              Advanced
             </Text>
           </TouchableOpacity>
         </View>

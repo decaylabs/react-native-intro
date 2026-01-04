@@ -24,7 +24,6 @@ import type {
   HintType,
 } from '../types';
 import type { Theme } from '../themes/types';
-import { resolveTheme } from '../themes';
 
 /**
  * Get position styles for indicator placement
@@ -372,8 +371,14 @@ export function HintSpot({
   tooltipStyle,
 }: HintSpotProps) {
   const viewRef = useRef<any>(null);
-  const { state, dispatch, registerHint, unregisterHint, hintCallbacks } =
-    useIntroContext();
+  const {
+    state,
+    dispatch,
+    registerHint,
+    unregisterHint,
+    hintCallbacks,
+    theme,
+  } = useIntroContext();
 
   // Build props config object (only include defined values)
   const propsConfig = useMemo(() => {
@@ -409,9 +414,6 @@ export function HintSpot({
     : null;
 
   const isActive = state.hints.activeHintId === hintConfig?.id;
-
-  // Resolve theme (using classic as default)
-  const theme = resolveTheme('classic');
 
   // Determine if animation is enabled
   // Per-hint animation overrides global option

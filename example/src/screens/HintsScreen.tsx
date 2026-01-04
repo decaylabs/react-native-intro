@@ -166,12 +166,8 @@ export function HintsScreen({ isDark = false }: HintsScreenProps) {
         <Switch
           value={animationsEnabled}
           onValueChange={setAnimationsEnabled}
-          trackColor={{ false: '#767577', true: colors.accent }}
-          thumbColor={animationsEnabled ? colors.accent : '#f4f3f4'}
+          trackColor={{ true: colors.accent }}
         />
-        <Text style={[styles.toggleStatus, { color: colors.textSecondary }]}>
-          {animationsEnabled ? 'ON' : 'OFF'}
-        </Text>
       </View>
 
       {/* Toggle Hints Button */}
@@ -207,17 +203,31 @@ export function HintsScreen({ isDark = false }: HintsScreenProps) {
         <Text style={styles.infoTitle}>How Hints Work</Text>
         <Text style={styles.infoText}>
           • Wrap elements with{' '}
-          <Text style={styles.codeText}>{`<HintSpot>`}</Text> and add{' '}
-          <Text style={styles.codeText}>hint</Text> prop
+          <Text
+            style={[styles.codeText, isDark && styles.codeTextDark]}
+          >{`<HintSpot>`}</Text>{' '}
+          and add{' '}
+          <Text style={[styles.codeText, isDark && styles.codeTextDark]}>
+            hint
+          </Text>{' '}
+          prop
         </Text>
         <Text style={styles.infoText}>
-          • Call <Text style={styles.codeText}>hints.show()</Text> to activate
-          all hints
+          • Call{' '}
+          <Text style={[styles.codeText, isDark && styles.codeTextDark]}>
+            hints.show()
+          </Text>{' '}
+          to activate all hints
         </Text>
         <Text style={styles.infoText}>
           • Pass global options like{' '}
-          <Text style={styles.codeText}>animation</Text> to{' '}
-          <Text style={styles.codeText}>show()</Text>
+          <Text style={[styles.codeText, isDark && styles.codeTextDark]}>
+            animation
+          </Text>{' '}
+          to{' '}
+          <Text style={[styles.codeText, isDark && styles.codeTextDark]}>
+            show()
+          </Text>
         </Text>
         <Text style={styles.infoText}>
           • Tap an indicator to reveal the tooltip
@@ -300,6 +310,176 @@ export function HintsScreen({ isDark = false }: HintsScreenProps) {
         </TouchableOpacity>
       </HintSpot>
 
+      {/* Hint Positions Demo */}
+      <View style={styles.positionsDemoContainer}>
+        <Text style={[styles.positionsDemoTitle, { color: colors.text }]}>
+          Hint Positions
+        </Text>
+        <Text
+          style={[
+            styles.positionsDemoSubtitle,
+            { color: colors.textSecondary },
+          ]}
+        >
+          All 8 available indicator positions
+        </Text>
+
+        {/* Position Grid */}
+        <View
+          style={[
+            styles.positionsGrid,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          {/* Top Row */}
+          <View style={styles.positionsRow}>
+            <HintSpot
+              id="pos-top-left"
+              hint="top-left position"
+              hintPosition="top-left"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  top-left
+                </Text>
+              </View>
+            </HintSpot>
+
+            <HintSpot
+              id="pos-top-center"
+              hint="top-center position"
+              hintPosition="top-center"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  top-center
+                </Text>
+              </View>
+            </HintSpot>
+
+            <HintSpot
+              id="pos-top-right"
+              hint="top-right position"
+              hintPosition="top-right"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  top-right
+                </Text>
+              </View>
+            </HintSpot>
+          </View>
+
+          {/* Middle Row */}
+          <View style={styles.positionsRow}>
+            <HintSpot
+              id="pos-middle-left"
+              hint="middle-left position"
+              hintPosition="middle-left"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  middle-left
+                </Text>
+              </View>
+            </HintSpot>
+
+            <View style={styles.positionBoxSpacer} />
+
+            <HintSpot
+              id="pos-middle-right"
+              hint="middle-right position"
+              hintPosition="middle-right"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  middle-right
+                </Text>
+              </View>
+            </HintSpot>
+          </View>
+
+          {/* Bottom Row */}
+          <View style={styles.positionsRow}>
+            <HintSpot
+              id="pos-bottom-left"
+              hint="bottom-left position"
+              hintPosition="bottom-left"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  bottom-left
+                </Text>
+              </View>
+            </HintSpot>
+
+            <HintSpot
+              id="pos-bottom-center"
+              hint="bottom-center position"
+              hintPosition="bottom-center"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  bottom-center
+                </Text>
+              </View>
+            </HintSpot>
+
+            <HintSpot
+              id="pos-bottom-right"
+              hint="bottom-right position"
+              hintPosition="bottom-right"
+            >
+              <View
+                style={[
+                  styles.positionBox,
+                  { backgroundColor: colors.iconBackground },
+                ]}
+              >
+                <Text style={[styles.positionLabel, { color: colors.text }]}>
+                  bottom-right
+                </Text>
+              </View>
+            </HintSpot>
+          </View>
+        </View>
+      </View>
+
       {/* Spacer */}
       <View style={styles.spacer} />
     </ScrollView>
@@ -372,24 +552,17 @@ const styles = StyleSheet.create({
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    gap: 12,
   },
   toggleLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
-  },
-  toggleStatus: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
-    minWidth: 30,
   },
   controlsContainer: {
     padding: 16,
@@ -442,9 +615,14 @@ const styles = StyleSheet.create({
   codeText: {
     fontFamily: 'monospace',
     backgroundColor: '#f0f0f0',
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
     borderRadius: 4,
     color: '#E91E63',
+  },
+  codeTextDark: {
+    backgroundColor: '#2d2d2d',
+    color: '#ff79c6',
   },
   cardsContainer: {
     padding: 16,
@@ -495,5 +673,46 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 40,
+  },
+  positionsDemoContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 8,
+  },
+  positionsDemoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  positionsDemoSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  positionsGrid: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    gap: 12,
+  },
+  positionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  positionBox: {
+    flex: 1,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  positionBoxSpacer: {
+    flex: 1,
+  },
+  positionLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

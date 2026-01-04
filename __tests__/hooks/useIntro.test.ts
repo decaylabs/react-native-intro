@@ -802,7 +802,39 @@ describe('useIntro', () => {
       expect(result.current.tour.currentStep).toBe(1);
     });
 
-    it('handles starting a new tour while one is active', async () => {
+    it('prevents starting a new tour while one is active', async () => {
+      const { result } = renderHook(() => useIntro(), { wrapper });
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
+      await act(async () => {
+        await result.current.tour.start('tour-1', sampleSteps);
+      });
+
+      expect(result.current.tour.tourId).toBe('tour-1');
+      expect(result.current.tour.totalSteps).toBe(3);
+
+      const newSteps: StepConfig[] = [
+        { id: 'new-step', content: 'New content' },
+      ];
+
+      // Attempting to start a new tour while one is active should be ignored
+      await act(async () => {
+        await result.current.tour.start('tour-2', newSteps);
+      });
+
+      // Original tour should still be active
+      expect(result.current.tour.tourId).toBe('tour-1');
+      expect(result.current.tour.totalSteps).toBe(3);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Cannot start tour')
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('allows starting a new tour after stopping the current one', async () => {
       const { result } = renderHook(() => useIntro(), { wrapper });
 
       await act(async () => {
@@ -811,10 +843,16 @@ describe('useIntro', () => {
 
       expect(result.current.tour.tourId).toBe('tour-1');
 
+      // Stop the first tour
+      await act(async () => {
+        await result.current.tour.stop();
+      });
+
       const newSteps: StepConfig[] = [
         { id: 'new-step', content: 'New content' },
       ];
 
+      // Now starting a new tour should work
       await act(async () => {
         await result.current.tour.start('tour-2', newSteps);
       });
