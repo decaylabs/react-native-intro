@@ -56,7 +56,8 @@
   },
   "homepage": "https://github.com/decaylabs/react-native-intro#readme",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
