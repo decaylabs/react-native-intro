@@ -724,6 +724,8 @@ tour.start('tutorial', [
 - `validateHint` - Validate hint config
 - `validateHints` - Validate hints array
 - `calculateTooltipPosition` - Position calculation
+- `setDebugEnabled` - Enable/disable debug logging
+- `isDebugEnabled` - Check debug logging state
 - `announceForAccessibility` - A11y announcement
 - `announceStepChange` - A11y step change
 - `announceTourComplete` - A11y tour complete
@@ -764,6 +766,80 @@ tour.start('tutorial', [
 5. **Measurements happen on start** - call `refresh()` after layout changes
 6. **"Don't show again"** persists to AsyncStorage (if installed)
 7. **Theme 'auto'** follows system dark/light mode
+
+## Tours in Modals
+
+When highlighting elements inside React Native modals:
+
+```tsx
+import { Modal } from 'react-native';
+import { TourStep, useTour } from '@decaylabs/react-native-intro';
+
+function ModalTourExample() {
+  const tour = useTour();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const startModalTour = () => {
+    setModalVisible(true);
+    // Allow modal to render before measuring
+    setTimeout(() => {
+      tour.start('modal-tour', [
+        { id: 'step-1', targetId: 'modal-element', content: 'Inside modal!' },
+      ]);
+    }, 100);
+  };
+
+  return (
+    <View>
+      <Button title="Start" onPress={startModalTour} />
+      <Modal visible={modalVisible}>
+        <TourStep id="modal-element">
+          <Button title="Action" />
+        </TourStep>
+      </Modal>
+    </View>
+  );
+}
+```
+
+**Key points:**
+- Modal must be within `IntroProvider` tree
+- Add 50-100ms delay after opening modal before starting tour
+- Call `tour.stop()` before closing modal if tour is active
+
+---
+
+## Debug Logging
+
+Enable detailed console logging to debug positioning issues:
+
+```tsx
+import { setDebugEnabled, isDebugEnabled } from '@decaylabs/react-native-intro';
+
+// Enable debug mode
+setDebugEnabled(true);
+
+// Check if enabled
+console.log(isDebugEnabled()); // true
+```
+
+Console output includes:
+```
+[TourOverlay] Step transition effect triggered {...}
+[TourOverlay] Measurement result {x: 320, y: 700, width: 56, height: 56}
+[Tooltip] Calculating position {...}
+[Positioning] calculateTooltipPosition called {...}
+[Positioning] tryPosition 'top': FAILED
+[Positioning] All positions failed, using fallback strategy
+```
+
+Debug logs show:
+- Element measurements (x, y, width, height)
+- Position attempts and why they succeed/fail
+- State transitions and timing
+- Fallback positioning decisions
+
+---
 
 ## Error Handling
 

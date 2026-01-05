@@ -539,6 +539,78 @@ const customStorage = {
 </IntroProvider>
 ```
 
+### Tours in Modals
+
+When using tours with elements inside React Native modals, ensure the modal is rendered within the `IntroProvider` context. The tour overlay renders at the root level, so modal content must be measurable.
+
+```tsx
+import { Modal } from 'react-native';
+import { TourStep, useTour } from '@decaylabs/react-native-intro';
+
+function MyScreen() {
+  const tour = useTour();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const startModalTour = () => {
+    // Ensure modal is open before starting tour
+    setModalVisible(true);
+    // Small delay to allow modal to render and layout
+    setTimeout(() => {
+      tour.start('modal-tour', [
+        {
+          id: 'step-1',
+          targetId: 'modal-button',
+          content: 'This button is inside a modal!',
+        },
+      ]);
+    }, 100);
+  };
+
+  return (
+    <View>
+      <Button title="Open Modal Tour" onPress={startModalTour} />
+
+      <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalContent}>
+          <TourStep id="modal-button">
+            <Button title="Modal Action" onPress={() => {}} />
+          </TourStep>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+```
+
+**Important considerations for modals:**
+- Add a small delay (50-100ms) after opening the modal before starting the tour to ensure layout is complete
+- The modal must be rendered within the `IntroProvider` tree
+- Use `tour.stop()` before closing the modal if a tour is active
+
+### Debug Logging
+
+Enable detailed console logging to debug tour positioning and state issues:
+
+```tsx
+import { setDebugEnabled } from '@decaylabs/react-native-intro';
+
+// Enable debug logging
+setDebugEnabled(true);
+
+// Check Metro/Xcode console for logs:
+// [TourOverlay] Step transition effect triggered {...}
+// [Tooltip] Calculating position {...}
+// [Positioning] calculateTooltipPosition called {...}
+```
+
+Debug logs include:
+- Element measurements and coordinates
+- Position calculation attempts and results
+- State transitions and animation events
+- Fallback positioning decisions
+
+The example app includes a debug toggle in the **Advanced** screen.
+
 ### Accessibility
 
 The library provides comprehensive accessibility support:
