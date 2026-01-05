@@ -16,7 +16,7 @@ import {
   IntroProvider,
   type TourOptions,
   type ThemeName,
-} from 'react-native-intro';
+} from '@decaylabs/react-native-intro';
 import { BasicTourScreen } from './screens/BasicTourScreen';
 import { HintsScreen } from './screens/HintsScreen';
 import { ThemesScreen } from './screens/ThemesScreen';

@@ -13,7 +13,7 @@ import {
   useIntro,
   useScrollView,
   type ScrollableRef,
-} from 'react-native-intro';
+} from '@decaylabs/react-native-intro';
 import { DemoCard } from '../components/DemoCard';
 
 interface AdvancedScreenProps {

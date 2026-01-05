@@ -21,7 +21,7 @@ import {
   useTour,
   useScrollView,
   type ScrollableRef,
-} from 'react-native-intro';
+} from '@decaylabs/react-native-intro';
 
 interface BasicTourScreenProps {
   isDark?: boolean;

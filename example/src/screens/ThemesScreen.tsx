@@ -19,7 +19,7 @@ import {
   useScrollView,
   type ScrollableRef,
   type ThemeName,
-} from 'react-native-intro';
+} from '@decaylabs/react-native-intro';
 
 type SelectableTheme = ThemeName;
 
@@ -312,7 +312,7 @@ export function ThemesScreen({
             <Text style={styles.codeTitle}>Custom Theme Example</Text>
             <View style={styles.codeBlock}>
               <Text style={styles.codeText}>
-                {`import { createTheme } from 'react-native-intro';
+                {`import { createTheme } from '@decaylabs/react-native-intro';
 
 const myTheme = createTheme('dark', {
   buttons: {

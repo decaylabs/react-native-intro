@@ -38,7 +38,7 @@ module.exports = {
 **Required** - Wrap your app with `IntroProvider` to enable tours and hints:
 
 ```tsx
-import { IntroProvider } from 'react-native-intro';
+import { IntroProvider } from '@decaylabs/react-native-intro';
 
 function App() {
   return (
@@ -54,7 +54,7 @@ function App() {
 Wrap elements to make them tour targets:
 
 ```tsx
-import { TourStep } from 'react-native-intro';
+import { TourStep } from '@decaylabs/react-native-intro';
 
 <TourStep id="my-button" order={1} intro="Click here to start" title="Welcome">
   <Button title="Click Me" />
@@ -66,7 +66,7 @@ import { TourStep } from 'react-native-intro';
 Wrap elements to show hint indicators:
 
 ```tsx
-import { HintSpot } from 'react-native-intro';
+import { HintSpot } from '@decaylabs/react-native-intro';
 
 <HintSpot id="inbox" hint="New messages appear here" hintPosition="top-right">
   <InboxIcon />
@@ -78,7 +78,7 @@ import { HintSpot } from 'react-native-intro';
 Use hooks to control tours and hints programmatically:
 
 ```tsx
-import { useIntro, useTour, useHints } from 'react-native-intro';
+import { useIntro, useTour, useHints } from '@decaylabs/react-native-intro';
 
 const { tour, hints, callbacks } = useIntro();
 // or
@@ -398,7 +398,7 @@ interface HintCallbacks {
 ### Pattern 1: Basic Props-Based Tour
 
 ```tsx
-import { IntroProvider, TourStep, useTour } from 'react-native-intro';
+import { IntroProvider, TourStep, useTour } from '@decaylabs/react-native-intro';
 
 function App() {
   return (
@@ -567,7 +567,7 @@ function FeatureHints() {
 ### Pattern 6: Custom Theme
 
 ```tsx
-import { IntroProvider, mergeTheme, classicTheme } from 'react-native-intro';
+import { IntroProvider, mergeTheme, classicTheme } from '@decaylabs/react-native-intro';
 
 const customTheme = mergeTheme(classicTheme, {
   overlay: { opacity: 0.85 },
@@ -597,7 +597,7 @@ function App() {
 ### Pattern 7: Auto-Scroll in ScrollView
 
 ```tsx
-import { useScrollView } from 'react-native-intro';
+import { useScrollView } from '@decaylabs/react-native-intro';
 
 function LongScreen() {
   const { scrollViewRef, scrollViewProps } = useScrollView();

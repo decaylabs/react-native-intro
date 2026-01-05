@@ -15,7 +15,7 @@ import {
   ScrollView,
   Switch,
 } from 'react-native';
-import { HintSpot, useHints } from 'react-native-intro';
+import { HintSpot, useHints } from '@decaylabs/react-native-intro';
 
 interface HintsScreenProps {
   isDark?: boolean;

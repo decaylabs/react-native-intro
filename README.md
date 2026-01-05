@@ -63,7 +63,7 @@ npx expo install react-native-intro react-native-reanimated @react-native-async-
 ### 1. Wrap Your App with IntroProvider
 
 ```tsx
-import { IntroProvider } from 'react-native-intro';
+import { IntroProvider } from '@decaylabs/react-native-intro';
 
 export default function App() {
   return (
@@ -77,7 +77,7 @@ export default function App() {
 ### 2. Mark Elements as Tour Steps
 
 ```tsx
-import { TourStep, useTour } from 'react-native-intro';
+import { TourStep, useTour } from '@decaylabs/react-native-intro';
 import { View, Text, Button } from 'react-native';
 
 function HomeScreen() {
@@ -444,7 +444,7 @@ tour.start('tutorial', [
 #### Custom Theme
 
 ```tsx
-import { IntroProvider, createTheme, mergeTheme, classicTheme } from 'react-native-intro';
+import { IntroProvider, createTheme, mergeTheme, classicTheme } from '@decaylabs/react-native-intro';
 
 // Full custom theme
 const myTheme = createTheme({
@@ -490,7 +490,7 @@ const customTheme = mergeTheme(classicTheme, {
 Register your ScrollView to enable auto-scrolling to off-screen elements:
 
 ```tsx
-import { useScrollView } from 'react-native-intro';
+import { useScrollView } from '@decaylabs/react-native-intro';
 import { ScrollView } from 'react-native';
 
 function MyScreen() {
@@ -550,7 +550,7 @@ The library provides comprehensive accessibility support:
 
 ```tsx
 // Check accessibility preferences
-import { isReduceMotionEnabled, isScreenReaderEnabled } from 'react-native-intro';
+import { isReduceMotionEnabled, isScreenReaderEnabled } from '@decaylabs/react-native-intro';
 
 const reduceMotion = await isReduceMotionEnabled();
 const screenReader = await isScreenReaderEnabled();
@@ -602,7 +602,7 @@ import type {
   IntroProviderProps,
   TourStepProps,
   HintSpotProps,
-} from 'react-native-intro';
+} from '@decaylabs/react-native-intro';
 ```
 
 ## Troubleshooting

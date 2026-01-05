@@ -1,5 +1,5 @@
 {
-  "name": "@dknell/react-native-intro",
+  "name": "@decaylabs/react-native-intro",
   "version": "0.1.0",
   "description": "A React Native implementation of intro.js for mobile app onboarding",
   "main": "./lib/module/index.js",
@@ -47,14 +47,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dknell/react-native-intro.git"
+    "url": "git+https://github.com/decaylabs/react-native-intro.git"
   },
   "author": "David Knell <dk45@mac.com> (https://github.com/dknell)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dknell/react-native-intro/issues"
+    "url": "https://github.com/decaylabs/react-native-intro/issues"
   },
-  "homepage": "https://github.com/dknell/react-native-intro#readme",
+  "homepage": "https://github.com/decaylabs/react-native-intro#readme",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },

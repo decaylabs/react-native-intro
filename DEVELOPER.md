@@ -16,7 +16,7 @@ This guide covers setting up your development environment, running the example a
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/dknell/react-native-intro.git
+git clone https://github.com/decaylabs/react-native-intro.git
 cd react-native-intro
 ```
 
@@ -389,8 +389,8 @@ await waitFor(() => {
 
 ## Getting Help
 
-- **GitHub Issues**: [github.com/dknell/react-native-intro/issues](https://github.com/dknell/react-native-intro/issues)
-- **Discussions**: [github.com/dknell/react-native-intro/discussions](https://github.com/dknell/react-native-intro/discussions)
+- **GitHub Issues**: [github.com/decaylabs/react-native-intro/issues](https://github.com/decaylabs/react-native-intro/issues)
+- **Discussions**: [github.com/decaylabs/react-native-intro/discussions](https://github.com/decaylabs/react-native-intro/discussions)
 
 ## License
 

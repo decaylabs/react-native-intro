@@ -122,7 +122,7 @@ function mergeHintStyle(
  *
  * @example
  * ```tsx
- * import { classicTheme, mergeTheme } from 'react-native-intro';
+ * import { classicTheme, mergeTheme } from '@decaylabs/react-native-intro';
  *
  * const customTheme = mergeTheme(classicTheme, {
  *   tooltip: { backgroundColor: '#f0f0f0' },

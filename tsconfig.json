@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-intro": ["./src/index"]
+      "@decaylabs/react-native-intro": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
