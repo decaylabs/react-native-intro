@@ -2,6 +2,21 @@
 
 A native React Native implementation of [intro.js](https://github.com/usablica/intro.js) — step-by-step user onboarding tours and contextual hints for mobile apps. This is not a wrapper around the web library; it's a complete reimplementation with feature parity to intro.js v8.0.0+.
 
+## Features
+
+- **Step-by-step tours** with spotlight overlay and smooth animations
+- **Contextual hints** with pulsing indicators and tap-to-reveal tooltips
+- **Props-based or programmatic** configuration
+- **Rich tooltip content** — titles, images, custom React components
+- **Floating tooltips** for welcome/intro screens (no target element)
+- **Auto-scroll** to off-screen elements
+- **Smart positioning** with automatic edge detection
+- **Progress indicators** — progress bar and step bullets
+- **Theming** — built-in themes (classic, modern, dark, auto) + custom themes
+- **Persistence** — "Don't show again" with AsyncStorage
+- **Accessibility** — VoiceOver/TalkBack, screen reader announcements, reduced motion
+- **TypeScript** — full type definitions included
+
 ## Installation
 
 ```bash
@@ -12,21 +27,42 @@ yarn add react-native-intro
 pnpm add react-native-intro
 ```
 
+### Required Peer Dependencies
+
+```bash
+# Smooth animations (required)
+npm install react-native-reanimated
+```
+
+Configure the Reanimated babel plugin in your `babel.config.js`:
+
+```js
+module.exports = {
+  presets: ['module:@react-native/babel-preset'],
+  plugins: ['react-native-reanimated/plugin'], // Must be last
+};
+```
+
 ### Optional Dependencies
 
 ```bash
-# Enhanced animations
-npm install react-native-reanimated
-
 # "Don't show again" persistence
 npm install @react-native-async-storage/async-storage
 ```
 
+### Expo Users
+
+Use `npx expo install` to automatically pick compatible versions for your SDK:
+
+```bash
+npx expo install react-native-intro react-native-reanimated @react-native-async-storage/async-storage
+```
+
 ## Quick Start
 
-Wrap your app with `IntroProvider`:
+### 1. Wrap Your App with IntroProvider
 
-```jsx
+```tsx
 import { IntroProvider } from 'react-native-intro';
 
 export default function App() {
@@ -38,14 +74,11 @@ export default function App() {
 }
 ```
 
-## Tours
+### 2. Mark Elements as Tour Steps
 
-### Basic Tour (Props-based)
-
-Wrap elements with `TourStep` and define step content via props:
-
-```jsx
+```tsx
 import { TourStep, useTour } from 'react-native-intro';
+import { View, Text, Button } from 'react-native';
 
 function HomeScreen() {
   const tour = useTour();
@@ -53,7 +86,7 @@ function HomeScreen() {
   return (
     <View>
       <TourStep id="welcome" order={1} intro="Welcome to the app!" title="Hello">
-        <Text>My App</Text>
+        <Text style={styles.header}>My App</Text>
       </TourStep>
 
       <TourStep id="profile" order={2} intro="Tap here to view your profile">
@@ -70,248 +103,457 @@ function HomeScreen() {
 }
 ```
 
-### Programmatic Tour
+### 3. Start the Tour
 
-For dynamic tours or when content comes from a CMS:
+```tsx
+// Props-based (recommended) - uses content from TourStep props
+tour.start();
 
-```jsx
-const tour = useTour();
+// With options
+tour.start({ showProgress: true, dontShowAgain: true });
 
-const startTour = () => {
-  tour.start('my-tour', [
-    { id: 'step-1', targetId: 'welcome', content: 'Welcome!' },
-    { id: 'step-2', targetId: 'profile', content: 'Your profile' },
-  ]);
-};
+// For a specific group
+tour.start('onboarding');
 ```
 
-### TourStep Props
+## API Reference
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `id` | `string` | required | Unique identifier |
-| `order` | `number` | `0` | Step order (lower = earlier) |
-| `intro` | `string \| ReactNode` | — | Tooltip content |
-| `title` | `string` | — | Tooltip title |
-| `position` | `TooltipPosition` | `'auto'` | Tooltip placement |
-| `disableInteraction` | `boolean` | `false` | Prevent touch on element |
-| `group` | `string` | — | Tour group identifier |
+### Components
 
-### Tooltip Positions
+#### IntroProvider
 
-`top`, `top-left`, `top-middle`, `top-right`, `bottom`, `bottom-left`, `bottom-middle`, `bottom-right`, `left`, `right`, `auto`, `floating`
+Context provider that enables tour and hint functionality. Must wrap your entire app or the portion that uses tours/hints.
+
+```tsx
+<IntroProvider
+  theme="classic"                    // 'classic' | 'modern' | 'dark' | 'auto' | Theme
+  defaultTourOptions={{ ... }}       // TourOptions
+  defaultHintOptions={{ ... }}       // HintOptions
+  storageAdapter={customAdapter}     // Optional custom storage
+  disablePersistence={false}         // Disable "Don't show again" persistence
+>
+  <App />
+</IntroProvider>
+```
+
+#### TourStep
+
+Wrapper component that registers an element as a tour step.
+
+```tsx
+<TourStep
+  id="unique-id"           // Required: unique identifier
+  order={1}                // Step order (lower = earlier)
+  intro="Step content"     // Tooltip content (string or ReactNode)
+  title="Step Title"       // Optional tooltip title
+  position="auto"          // Tooltip position: top, bottom, left, right, auto
+  disableInteraction       // Prevent touch on element during tour
+  group="tour-name"        // Group identifier for multiple tours
+>
+  <YourComponent />
+</TourStep>
+
+// Floating step (no element highlight) - just omit children
+<TourStep
+  id="welcome"
+  order={1}
+  title="Welcome!"
+  intro="This tooltip appears centered on screen."
+/>
+```
+
+**Tooltip Positions:** `top`, `bottom`, `left`, `right`, `auto`
+
+**Floating Steps:** Omit `children` for a centered tooltip without highlighting any element. Useful for welcome messages.
+
+#### HintSpot
+
+Wrapper component that registers an element as a hint anchor.
+
+```tsx
+<HintSpot
+  id="unique-id"              // Required: unique identifier
+  hint="Hint content"         // Hint tooltip content
+  hintPosition="top-right"    // Indicator position
+  hintAnimation={true}        // Pulsing animation
+  hintType="default"          // 'default' | 'info' | 'warning' | 'error' | 'success'
+>
+  <YourComponent />
+</HintSpot>
+```
+
+**Hint Positions:**
+`top-left`, `top-center`, `top-right`, `middle-left`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right`
+
+### Hooks
+
+#### useIntro
+
+Combined hook providing both tour and hint controls.
+
+```tsx
+const { tour, hints, callbacks } = useIntro();
+
+// Tour state
+tour.isActive           // boolean
+tour.tourId             // string | null
+tour.currentStep        // number (0-based)
+tour.totalSteps         // number
+tour.currentStepConfig  // StepConfig | null
+tour.isTransitioning    // boolean
+
+// Tour controls
+tour.start()                    // Start props-based tour
+tour.start(options)             // With options
+tour.start('tour-id')           // Specific group
+tour.start('id', steps)         // Programmatic with steps
+tour.start('id', steps, opts)   // With steps and options
+tour.next()                     // Next step
+tour.prev()                     // Previous step
+tour.goTo(2)                    // Jump to step index
+tour.stop()                     // End tour
+tour.restart()                  // Restart from beginning
+tour.isDismissed('tour-id')     // Check if permanently dismissed
+tour.clearDismissed('tour-id')  // Clear dismissed state
+tour.refresh()                  // Re-measure elements
+
+// Hints state
+hints.isVisible         // boolean
+hints.activeHintId      // string | null
+hints.hints             // HintConfig[]
+
+// Hints controls
+hints.show()                  // Show props-based hints
+hints.show(options)           // With options
+hints.show(configs)           // Programmatic with configs
+hints.show(configs, options)  // With configs and options
+hints.hide()                  // Hide all hints
+hints.showHint('id')          // Show specific hint tooltip
+hints.hideHint('id')          // Hide specific hint tooltip
+hints.removeHint('id')        // Remove hint entirely
+hints.refresh()               // Re-measure positions
+
+// Callbacks
+callbacks.setTourCallbacks({ ... })
+callbacks.setHintCallbacks({ ... })
+```
+
+#### useTour
+
+Tour-only hook (lighter weight if you don't need hints).
+
+```tsx
+const tour = useTour();
+// Same API as useIntro().tour
+```
+
+#### useHints
+
+Hints-only hook (lighter weight if you don't need tours).
+
+```tsx
+const hints = useHints();
+// Same API as useIntro().hints
+```
+
+### Programmatic Tours
+
+For dynamic content or CMS-driven tours:
+
+```tsx
+const tour = useTour();
+
+// First, wrap elements with TourStep (just the id, no content props needed)
+<TourStep id="welcome"><Header /></TourStep>
+<TourStep id="profile"><ProfileButton /></TourStep>
+
+// Then start with explicit step configs
+tour.start('welcome-tour', [
+  {
+    id: 'step-1',
+    targetId: 'welcome',  // Must match a TourStep id
+    title: 'Welcome!',
+    content: 'Let me show you around.',
+  },
+  {
+    id: 'step-2',
+    targetId: 'profile',  // Must match a TourStep id
+    content: 'Tap here to view your profile.',
+    position: 'bottom',
+  },
+  {
+    id: 'step-3',
+    // No targetId = floating tooltip (centered, no spotlight)
+    title: 'You\'re all set!',
+    content: 'Enjoy using the app.',
+  },
+]);
+```
 
 ### Tour Options
 
-Configure via `IntroProvider` or `intro.setOptions()`:
-
-```jsx
-<IntroProvider
-  defaultOptions={{
-    showProgress: true,
-    showBullets: true,
-    overlayOpacity: 0.7,
-    exitOnOverlayClick: true,
-    scrollToElement: true,
-  }}
->
+```tsx
+interface TourOptions {
+  showProgress?: boolean;        // Show progress bar (default: true)
+  showBullets?: boolean;         // Show step dots (default: true)
+  showButtons?: boolean;         // Show nav buttons (default: true)
+  exitOnOverlayClick?: boolean;  // Close on overlay tap (default: false)
+  dontShowAgain?: boolean;       // Show checkbox (default: false)
+  disableInteraction?: boolean;  // Block element touch (default: false)
+  scrollToElement?: boolean;     // Auto-scroll (default: true)
+  scrollPadding?: number | {     // Scroll padding (default: 50)
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+  };
+  overlayOpacity?: number;       // 0-1 (default: 0.75)
+  overlayColor?: string;         // Overlay color
+  animate?: boolean | 'auto';    // Animations (default: 'auto')
+  animationDuration?: number;    // Duration ms (default: 300)
+  buttonLabels?: {
+    next?: string;               // default: 'Next'
+    prev?: string;               // default: 'Back'
+    done?: string;               // default: 'Done'
+    skip?: string;               // default: 'Skip'
+    dontShowAgain?: string;      // default: "Don't show again"
+  };
+  tooltipStyle?: ViewStyle;
+  overlayStyle?: ViewStyle;
+}
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `nextLabel` | `string` | `'Next'` | Next button text |
-| `prevLabel` | `string` | `'Back'` | Previous button text |
-| `skipLabel` | `string` | `'×'` | Skip button text |
-| `doneLabel` | `string` | `'Done'` | Done button text |
-| `showButtons` | `boolean` | `true` | Show navigation buttons |
-| `showBullets` | `boolean` | `true` | Show step bullets |
-| `showProgress` | `boolean` | `false` | Show progress bar |
-| `showStepNumbers` | `boolean` | `false` | Show step numbers |
-| `hidePrev` | `boolean` | `false` | Hide prev on first step |
-| `hideNext` | `boolean` | `false` | Hide next on last step |
-| `overlayOpacity` | `number` | `0.5` | Overlay opacity (0-1) |
-| `exitOnOverlayClick` | `boolean` | `true` | Exit on overlay tap |
-| `scrollToElement` | `boolean` | `true` | Auto-scroll to element |
-| `scrollPadding` | `number` | `30` | Scroll padding (px) |
-| `disableInteraction` | `boolean` | `false` | Disable element touch |
-| `dontShowAgain` | `boolean` | `false` | Show opt-out checkbox |
+### Hint Options
 
-### Tour Methods
-
-```jsx
-const tour = useTour();
-
-// Props-based (recommended)
-tour.start();                         // Start default tour
-tour.start({ showProgress: true });   // Start with options
-tour.start('group-name');             // Start tour for specific group
-tour.start('group', { exitOnOverlayClick: false }); // Group with options
-
-// Programmatic (for dynamic content)
-tour.start('id', steps);              // Start tour with explicit steps
-tour.start('id', steps, options);     // With steps and options
-
-// Navigation
-tour.next();                // Go to next step
-tour.prev();                // Go to previous step
-tour.goTo(2);               // Go to specific step index
-tour.stop();                // Stop the tour
-tour.restart();             // Restart from beginning
-tour.isDismissed('tour-id'); // Check if tour was dismissed
-tour.clearDismissed('id');  // Clear dismissed state
+```tsx
+interface HintOptions {
+  autoShow?: boolean;            // Show on render (default: false)
+  animation?: boolean;           // Pulsing animation (default: true)
+  closeOnOutsideClick?: boolean; // Close on outside tap (default: true)
+  indicatorSize?: number;        // Indicator size (default: 20)
+  indicatorStyle?: ViewStyle;
+  tooltipStyle?: ViewStyle;
+}
 ```
 
-### Tour Callbacks
+### Callbacks
 
-```jsx
-<IntroProvider
-  onStart={() => console.log('Tour started')}
-  onExit={() => console.log('Tour exited')}
-  onComplete={() => console.log('Tour completed')}
-  onChange={(step) => console.log(`Now on step ${step}`)}
-  onBeforeChange={(step) => true} // Return false to prevent
-  onBeforeExit={() => true}       // Return false to prevent
->
+All `onBefore*` callbacks support both sync and async (Promise) return values. Return `false` to prevent the action.
+
+```tsx
+const { callbacks } = useIntro();
+
+useEffect(() => {
+  callbacks.setTourCallbacks({
+    // Called before tour starts (async supported)
+    onBeforeStart: async (tourId) => {
+      const canStart = await checkPermissions();
+      return canStart; // false prevents start
+    },
+
+    // Called after tour starts
+    onStart: (tourId) => {
+      analytics.track('tour_started', { tourId });
+    },
+
+    // Called before step change (async supported)
+    onBeforeChange: async (currentStep, nextStep, direction) => {
+      if (direction === 'next' && currentStep === 1) {
+        const valid = await validateForm();
+        if (!valid) {
+          showError('Complete the form first');
+          return false;
+        }
+      }
+      return true;
+    },
+
+    // Called after step change
+    onChange: (currentStep, previousStep) => {
+      console.log(`Step ${previousStep} → ${currentStep}`);
+    },
+
+    // Called before tour exit (async supported)
+    onBeforeExit: async (reason) => {
+      if (reason !== 'completed') {
+        return await showConfirmDialog('Exit tour?');
+      }
+      return true;
+    },
+
+    // Called after tour ends
+    onComplete: (tourId, reason) => {
+      analytics.track('tour_completed', { tourId, reason });
+    },
+  });
+
+  callbacks.setHintCallbacks({
+    onHintsShow: () => console.log('Hints shown'),
+    onHintsHide: () => console.log('Hints hidden'),
+    onHintClick: (hintId) => console.log(`Hint ${hintId} clicked`),
+    onHintClose: (hintId) => console.log(`Hint ${hintId} closed`),
+  });
+}, []);
 ```
 
-## Hints
+### Rich Tooltip Content
 
-### Basic Hints (Props-based)
+Tooltips support images and custom React components:
 
-Wrap elements with `HintSpot` and define hint content via props:
+```tsx
+tour.start('tutorial', [
+  {
+    id: 'step-1',
+    targetId: 'feature',
+    title: 'New Feature!',
+    content: 'Check out this amazing feature.',
+    image: {
+      source: require('./feature.png'), // or { uri: 'https://...' }
+      width: '100%',
+      height: 150,
+      borderRadius: 8,
+      position: 'top', // 'top' | 'bottom'
+      alt: 'Feature screenshot',
+    },
+  },
+  {
+    id: 'step-2',
+    targetId: 'custom',
+    title: 'Custom Content',
+    content: (
+      <View>
+        <Text>Custom React component!</Text>
+        <Button title="Learn More" onPress={handleLearnMore} />
+      </View>
+    ),
+  },
+]);
+```
 
-```jsx
-import { HintSpot, useHints } from 'react-native-intro';
+### Theming
 
-function Dashboard() {
-  const hints = useHints();
+#### Built-in Themes
+
+```tsx
+<IntroProvider theme="classic">  {/* default */}
+<IntroProvider theme="modern">   {/* contemporary design */}
+<IntroProvider theme="dark">     {/* dark mode */}
+<IntroProvider theme="auto">     {/* follows system setting */}
+```
+
+#### Custom Theme
+
+```tsx
+import { IntroProvider, createTheme, mergeTheme, classicTheme } from 'react-native-intro';
+
+// Full custom theme
+const myTheme = createTheme({
+  name: 'custom',
+  overlay: {
+    backgroundColor: '#000',
+    opacity: 0.8,
+  },
+  tooltip: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    titleColor: '#fff',
+    contentColor: '#e0e0e0',
+    // ... other properties
+  },
+  buttons: {
+    primary: {
+      backgroundColor: '#4361ee',
+      textColor: '#fff',
+      // ...
+    },
+    secondary: { /* ... */ },
+  },
+  hint: { /* ... */ },
+  progress: { /* ... */ },
+});
+
+// Or extend a built-in theme
+const customTheme = mergeTheme(classicTheme, {
+  overlay: { opacity: 0.9 },
+  buttons: {
+    primary: { backgroundColor: '#ff6b6b' },
+  },
+});
+
+<IntroProvider theme={myTheme}>
+  <App />
+</IntroProvider>
+```
+
+### Auto-Scroll in ScrollViews
+
+Register your ScrollView to enable auto-scrolling to off-screen elements:
+
+```tsx
+import { useScrollView } from 'react-native-intro';
+import { ScrollView } from 'react-native';
+
+function MyScreen() {
+  const { scrollViewRef, scrollViewProps } = useScrollView();
 
   return (
-    <View>
-      <HintSpot id="inbox" hint="New messages appear here" hintPosition="bottom-right">
-        <InboxIcon />
-      </HintSpot>
+    <ScrollView ref={scrollViewRef} {...scrollViewProps}>
+      <TourStep id="step-1" intro="First element">
+        <Text>Near top</Text>
+      </TourStep>
 
-      <HintSpot id="progress" hint="Track your daily progress" hintPosition="top-center" hintType="info">
-        <ProgressChart />
-      </HintSpot>
+      {/* ... lots of content ... */}
 
-      <Button title="Show Hints" onPress={() => hints.show()} />
-    </View>
+      <TourStep id="step-5" intro="Far down the page">
+        <Text>Near bottom</Text>
+      </TourStep>
+    </ScrollView>
   );
 }
 ```
 
-### Programmatic Hints
+For directional scroll padding (useful with fixed headers/tab bars):
 
-For dynamic hints or when content comes from a CMS:
-
-```jsx
-const hints = useHints();
-
-hints.show([
-  { id: 'hint-1', targetId: 'inbox', content: 'New messages!', type: 'info' },
-  { id: 'hint-2', targetId: 'progress', content: 'Track progress', position: 'top-center' },
-]);
+```tsx
+tour.start('tour', steps, {
+  scrollPadding: {
+    top: 80,     // Account for header
+    bottom: 60,  // Account for tab bar
+  },
+});
 ```
 
-### HintSpot Props
+### Custom Storage Adapter
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `id` | `string` | required | Unique identifier |
-| `hint` | `string \| ReactNode` | — | Hint content |
-| `hintPosition` | `HintPosition` | `'top-right'` | Indicator position |
-| `hintAnimation` | `boolean` | `true` | Pulsing animation |
-| `hintType` | `HintType` | `'default'` | Type: `default`, `info`, `warning`, `error`, `success` |
+Replace AsyncStorage with your own persistence:
 
-### Hint Positions
+```tsx
+const customStorage = {
+  getItem: async (key) => await myDB.get(key),
+  setItem: async (key, value) => await myDB.set(key, value),
+  removeItem: async (key) => await myDB.delete(key),
+};
 
-`top-left`, `top-center`, `top-right`, `middle-left`, `middle-center`, `middle-right`, `bottom-left`, `bottom-center`, `bottom-right`
-
-### Hint Methods
-
-```jsx
-const hints = useHints();
-
-// Props-based (recommended)
-hints.show();                      // Show hints from HintSpot props
-hints.show({ animation: false });  // With global options
-hints.show({ closeOnOutsideClick: true }); // Options only
-
-// Programmatic (for dynamic content)
-hints.show(configs);               // Show hints with explicit config
-hints.show(configs, options);      // With configs and options
-
-// Control
-hints.hide();               // Hide all hints
-hints.showHint('hint-id');  // Show specific hint tooltip
-hints.hideHint('hint-id');  // Hide specific hint tooltip
-hints.removeHint('hint-id'); // Remove a hint entirely
-```
-
-### Hint Callbacks
-
-```jsx
-<IntroProvider
-  onHintClick={(hintId) => console.log(`Hint ${hintId} clicked`)}
-  onHintsAdded={() => console.log('Hints rendered')}
-  onHintClose={(hintId) => console.log(`Hint ${hintId} closed`)}
->
-```
-
-## Theming
-
-### Built-in Themes
-
-```jsx
-import { IntroProvider, themes } from 'react-native-intro';
-
-<IntroProvider theme={themes.modern}>
+<IntroProvider storageAdapter={customStorage}>
   <App />
 </IntroProvider>
 ```
 
-Available: `default`, `modern`, `dark`, `nassau`, `royal`, `nazanin`
+### Accessibility
 
-### Custom Theme
+The library provides comprehensive accessibility support:
 
-```jsx
-<IntroProvider
-  theme={{
-    overlayColor: '#000',
-    overlayOpacity: 0.75,
-    tooltipBackgroundColor: '#fff',
-    tooltipTextColor: '#333',
-    buttonBackgroundColor: '#007bff',
-    buttonTextColor: '#fff',
-    highlightBorderColor: '#007bff',
-    hintBackgroundColor: '#ff5722',
-  }}
->
-```
+- **VoiceOver/TalkBack**: All interactive elements have proper labels
+- **Screen reader announcements**: Step changes are announced
+- **Reduced motion**: Respects system preference
+- **Semantic roles**: Proper button, dialog, and progressbar roles
 
-### RTL Support
+```tsx
+// Check accessibility preferences
+import { isReduceMotionEnabled, isScreenReaderEnabled } from 'react-native-intro';
 
-```jsx
-<IntroProvider rtl={true}>
-  <App />
-</IntroProvider>
-```
-
-## Programmatic Steps
-
-Define steps without using TourStep props:
-
-```jsx
-const tour = useTour();
-
-// Define steps programmatically
-tour.start('my-tour', [
-  { id: 'step-1', targetId: 'profile', content: 'Your profile', title: 'Profile' },
-  { id: 'step-2', targetId: 'settings', content: 'Settings here' },
-  { id: 'step-3', content: 'Welcome!', position: 'floating' }, // No element - floating tooltip
-]);
+const reduceMotion = await isReduceMotionEnabled();
+const screenReader = await isScreenReaderEnabled();
 ```
 
 ## Platform Support
@@ -320,30 +562,105 @@ tour.start('my-tour', [
 |----------|---------|
 | React Native | 0.81.0+ |
 | React | 19.0.0+ |
-| Expo | 54.0.0+ (optional) |
 | iOS | 15.1+ |
 | Android | API 24+ |
+| Expo | 54.0.0+ (compatible, not required) |
 
 ## TypeScript
 
-Full TypeScript support included:
+Full TypeScript support with all types exported:
 
 ```tsx
-import type { TourOptions, HintOptions, IntroTheme } from 'react-native-intro';
+import type {
+  // Core types
+  TourOptions,
+  HintOptions,
+  StepConfig,
+  HintConfig,
+
+  // Theme types
+  Theme,
+  ThemeName,
+
+  // Callback types
+  TourCallbacks,
+  HintCallbacks,
+
+  // State types
+  TourState,
+  TourStateInfo,
+  HintsState,
+
+  // Control types
+  TourControls,
+  HintControls,
+
+  // Hook return type
+  UseIntroReturn,
+
+  // Component props
+  IntroProviderProps,
+  TourStepProps,
+  HintSpotProps,
+} from 'react-native-intro';
+```
+
+## Troubleshooting
+
+### Tooltip appears in wrong position
+
+Ensure the target element is rendered before starting:
+
+```tsx
+useEffect(() => {
+  const timer = setTimeout(() => tour.start(), 100);
+  return () => clearTimeout(timer);
+}, []);
+```
+
+### "Element not found" warning
+
+The `targetId` in programmatic tours must match the `id` of a `TourStep` component. The library only knows about elements wrapped in `TourStep`:
+
+```tsx
+// ✅ Correct - targetId matches TourStep id
+<TourStep id="my-button">
+  <Button title="Click" />
+</TourStep>
+tour.start('tour', [{ id: 'step-1', targetId: 'my-button', content: '...' }]);
+
+// ❌ Wrong - no TourStep with this id
+<Button id="my-button" title="Click" />  // Regular component, not registered!
+tour.start('tour', [{ id: 'step-1', targetId: 'my-button', content: '...' }]);
+```
+
+### Animations not smooth
+
+1. Ensure Reanimated is properly configured in `babel.config.js`
+2. Clear Metro cache: `npx react-native start --reset-cache`
+3. Rebuild the app
+
+### Tour doesn't start for repeat users
+
+If using `dontShowAgain: true`, the tour is persisted when dismissed:
+
+```tsx
+// Check if dismissed
+if (tour.isDismissed('my-tour')) {
+  // Show a "restart tour" button
+}
+
+// Clear dismissed state
+tour.clearDismissed('my-tour');
 ```
 
 ## Contributing
 
-See the [contributing guide](CONTRIBUTING.md) for development workflow and how to submit pull requests.
+See [DEVELOPER.md](./DEVELOPER.md) for development setup and [MAINTAINER.md](./MAINTAINER.md) for release procedures.
 
 ## License
 
 MIT
-
-## See Also
-
-- [PROJECT_SPEC.md](./PROJECT_SPEC.md) - Full technical specification
-- [intro.js documentation](https://introjs.com/docs)
 
 ---
 
