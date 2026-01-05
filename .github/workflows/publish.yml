@@ -1,23 +1,40 @@
-name: Publish
+name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        description: 'Version bump type (leave empty for auto-detect from commits)'
+        required: false
+        default: ''
+        options:
+          - ''
+          - patch
+          - minor
+          - major
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      packages: write
       id-token: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Needed for conventional commits analysis
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -25,13 +42,27 @@ jobs:
       - name: Verify tests pass
         run: yarn test --maxWorkers=2
 
-      - name: Build package
-        run: yarn prepare
+      - name: Verify types
+        run: yarn typecheck
 
-      - name: Setup npm auth
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Publish to npm
-        run: npm publish --provenance --access public
+      - name: Setup npm auth for GitHub Packages
+        run: |
+          echo "@decaylabs:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
+      - name: Release (auto-detect version)
+        if: ${{ github.event.inputs.version == '' || github.event.inputs.version == null }}
+        run: yarn release --ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release (manual version)
+        if: ${{ github.event.inputs.version != '' && github.event.inputs.version != null }}
+        run: yarn release --ci ${{ github.event.inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
