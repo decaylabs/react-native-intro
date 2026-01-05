@@ -57,12 +57,14 @@ jobs:
 
       - name: Release (auto-detect version)
         if: ${{ github.event.inputs.version == '' || github.event.inputs.version == null }}
-        run: yarn release --ci --no-git.requireCleanWorkingDir
+        run: npx release-it --ci --no-git.requireCleanWorkingDir
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
 
       - name: Release (manual version)
         if: ${{ github.event.inputs.version != '' && github.event.inputs.version != null }}
-        run: yarn release --ci --no-git.requireCleanWorkingDir ${{ github.event.inputs.version }}
+        run: npx release-it --ci --no-git.requireCleanWorkingDir ${{ github.event.inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
