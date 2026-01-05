@@ -1817,6 +1817,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dknell/react-native-intro@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@dknell/react-native-intro@workspace:."
+  dependencies:
+    "@babel/core": "npm:^7.26.0"
+    "@commitlint/config-conventional": "npm:^19.8.1"
+    "@react-native/babel-preset": "npm:0.83.1"
+    "@react-native/eslint-config": "npm:0.83.1"
+    "@release-it/conventional-changelog": "npm:^10.0.1"
+    "@testing-library/react-native": "npm:^13.3.0"
+    "@types/jest": "npm:^29.5.14"
+    "@types/react": "npm:^19.1.12"
+    commitlint: "npm:^19.8.1"
+    del-cli: "npm:^6.0.0"
+    eslint: "npm:^8.57.1"
+    eslint-config-prettier: "npm:^10.1.8"
+    eslint-plugin-prettier: "npm:^5.5.4"
+    jest: "npm:^29.7.0"
+    lefthook: "npm:^2.0.13"
+    prettier: "npm:^3.7.4"
+    react: "npm:19.1.0"
+    react-native: "npm:0.81.5"
+    react-native-builder-bob: "npm:^0.40.17"
+    react-native-reanimated: "npm:^3.17.4"
+    react-test-renderer: "npm:19.1.0"
+    release-it: "npm:^19.0.4"
+    typescript: "npm:^5.9.2"
+  peerDependencies:
+    "@react-native-async-storage/async-storage": ">=2.1.0"
+    react: ">=19.0.0"
+    react-native: ">=0.81.0"
+    react-native-reanimated: ">=3.16.0"
+  peerDependenciesMeta:
+    "@react-native-async-storage/async-storage":
+      optional: true
+  languageName: unknown
+  linkType: soft
+
 "@eslint-community/eslint-utils@npm:^4.2.0, @eslint-community/eslint-utils@npm:^4.7.0":
   version: 4.9.1
   resolution: "@eslint-community/eslint-utils@npm:4.9.1"
@@ -11002,44 +11040,6 @@ __metadata:
     react-native-safe-area-context: "npm:~5.6.2"
     react-native-web: "npm:~0.21.2"
     react-native-worklets: "npm:~0.7.1"
-  languageName: unknown
-  linkType: soft
-
-"react-native-intro@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "react-native-intro@workspace:."
-  dependencies:
-    "@babel/core": "npm:^7.26.0"
-    "@commitlint/config-conventional": "npm:^19.8.1"
-    "@react-native/babel-preset": "npm:0.83.1"
-    "@react-native/eslint-config": "npm:0.83.1"
-    "@release-it/conventional-changelog": "npm:^10.0.1"
-    "@testing-library/react-native": "npm:^13.3.0"
-    "@types/jest": "npm:^29.5.14"
-    "@types/react": "npm:^19.1.12"
-    commitlint: "npm:^19.8.1"
-    del-cli: "npm:^6.0.0"
-    eslint: "npm:^8.57.1"
-    eslint-config-prettier: "npm:^10.1.8"
-    eslint-plugin-prettier: "npm:^5.5.4"
-    jest: "npm:^29.7.0"
-    lefthook: "npm:^2.0.13"
-    prettier: "npm:^3.7.4"
-    react: "npm:19.1.0"
-    react-native: "npm:0.81.5"
-    react-native-builder-bob: "npm:^0.40.17"
-    react-native-reanimated: "npm:^3.17.4"
-    react-test-renderer: "npm:19.1.0"
-    release-it: "npm:^19.0.4"
-    typescript: "npm:^5.9.2"
-  peerDependencies:
-    "@react-native-async-storage/async-storage": ">=2.1.0"
-    react: ">=19.0.0"
-    react-native: ">=0.81.0"
-    react-native-reanimated: ">=3.16.0"
-  peerDependenciesMeta:
-    "@react-native-async-storage/async-storage":
-      optional: true
   languageName: unknown
   linkType: soft
 
