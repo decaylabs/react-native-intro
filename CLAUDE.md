@@ -89,7 +89,7 @@ Both TourStep and HintSpot support two usage patterns:
 
 - React Native: 0.81.0+
 - React: 19.0.0+
-- Expo: 54.0.0+ (optional)
+- Expo: 54.0.0+ (compatible, not required)
 
 ## Commit Convention
 
@@ -143,8 +143,36 @@ When completing any feature work:
 5. Update this file (CLAUDE.md) if architecture or conventions change
 
 ## Active Technologies
-- TypeScript 5.9+ (strict mode) (001-rn-intro-library)
-- AsyncStorage for "Don't show again" preference (with custom adapter option) (001-rn-intro-library)
 
-## Recent Changes
-- 001-rn-intro-library: Added TypeScript 5.9+ (strict mode)
+- TypeScript 5.9+ (strict mode)
+- React Native 0.81+
+- React 19+
+- react-native-reanimated 3.16+ (for animations)
+- AsyncStorage for "Don't show again" persistence (optional, with custom adapter support)
+- Expo 54+ (compatible, not a dependency)
+
+## Key Source Files
+
+| Path | Purpose |
+|------|---------|
+| `src/index.tsx` | Main exports |
+| `src/components/IntroProvider.tsx` | Context provider and reducer |
+| `src/components/TourStep.tsx` | Tour step wrapper component |
+| `src/components/HintSpot.tsx` | Hint anchor wrapper component |
+| `src/components/TourOverlay.tsx` | Overlay with spotlight |
+| `src/components/Tooltip.tsx` | Step tooltip display |
+| `src/hooks/useIntro.ts` | Main hook implementation |
+| `src/context/IntroContext.ts` | State types and initial state |
+| `src/context/reducer.ts` | State reducer |
+| `src/themes/` | Built-in themes |
+| `src/types/` | TypeScript type definitions |
+
+## Testing
+
+Test files are in `__tests__/`:
+- `__tests__/hooks/` - Hook tests
+- `__tests__/components/` - Component tests
+- `__tests__/unit/` - Unit tests
+
+Run tests: `yarn test`
+Run specific: `yarn test __tests__/hooks/useIntro.test.ts`

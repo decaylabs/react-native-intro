@@ -149,12 +149,6 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
         // Complete immediately (no morph animation for floating)
         onMorphComplete();
-
-        if (__DEV__) {
-          console.log(
-            `[TourOverlay] Step ${stepIndex}: floating tooltip (no target)`
-          );
-        }
         return;
       }
 
@@ -166,18 +160,6 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
       // Step 3: Measure element at final position
       const measurement = await measureElement(targetId);
-
-      // Debug: Log measurement to help diagnose spotlight issues
-      if (__DEV__) {
-        console.log(`[TourOverlay] Step ${stepIndex} measurement:`, {
-          targetId,
-          x: measurement?.x,
-          y: measurement?.y,
-          width: measurement?.width,
-          height: measurement?.height,
-          measured: measurement?.measured,
-        });
-      }
 
       // Update displayed step content
       setDisplayedStep(currentStep);
