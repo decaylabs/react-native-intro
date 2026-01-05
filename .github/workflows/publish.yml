@@ -44,15 +44,6 @@ jobs:
       - name: Verify types
         run: yarn typecheck
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Setup npm auth for npmjs
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-
       - name: Release (auto-detect version)
         if: ${{ github.event.inputs.version == '' || github.event.inputs.version == null }}
         run: npx release-it --ci
