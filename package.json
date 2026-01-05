@@ -1,6 +1,6 @@
 {
   "name": "@decaylabs/react-native-intro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A React Native implementation of intro.js for mobile app onboarding",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
