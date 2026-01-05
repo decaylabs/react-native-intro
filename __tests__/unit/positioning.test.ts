@@ -106,7 +106,10 @@ describe('positioning utilities', () => {
     });
 
     it('should return appropriate arrow position for left/right', () => {
-      const target = createMeasurement(100, 400, 50, 50);
+      // Position target far enough from edges that left/right placements fit
+      // For 'left': target.x must be >= tooltip.width + gap + padding (100 + 16 + 10 = 126)
+      // For 'right': target.x + target.width + gap + tooltip.width <= screen.width - padding
+      const target = createMeasurement(150, 400, 50, 50);
       const tooltip = createTooltip(100, 80);
 
       const rightResult = calculateTooltipPosition(target, tooltip, 'right');

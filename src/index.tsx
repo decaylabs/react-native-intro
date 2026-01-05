@@ -39,6 +39,7 @@ export {
   validateHints,
 } from './utils/validation';
 export { calculateTooltipPosition } from './utils/positioning';
+export { setDebugEnabled, isDebugEnabled } from './utils/debug';
 export {
   announceForAccessibility,
   announceStepChange,

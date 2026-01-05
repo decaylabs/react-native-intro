@@ -3,6 +3,7 @@
  */
 
 import { useMemo, useCallback, useState, useEffect } from 'react';
+import { logTooltip as log } from '../utils/debug';
 import {
   View,
   Text,
@@ -66,17 +67,23 @@ export function Tooltip({
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === totalSteps - 1;
 
-  // Reset measurement state when step changes
+  // Reset measurement state when step changes to prevent stale size calculations
   useEffect(() => {
+    log('Step changed, resetting measurement state', { stepIndex });
     setHasMeasured(false);
+    setTooltipSize({ width: 0, height: 0 });
   }, [stepIndex]);
 
   // Handle tooltip layout to get actual size
-  const handleLayout = useCallback((event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setTooltipSize({ width, height });
-    setHasMeasured(true);
-  }, []);
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { width, height } = event.nativeEvent.layout;
+      log('Layout measured', { width, height, stepIndex });
+      setTooltipSize({ width, height });
+      setHasMeasured(true);
+    },
+    [stepIndex]
+  );
 
   // Calculate tooltip position based on actual measured size
   const tooltipPosition = useMemo(() => {
@@ -85,24 +92,37 @@ export function Tooltip({
       ? tooltipSize
       : { width: theme.tooltip.maxWidth, height: 250 }; // Better initial estimate
 
+    log('Calculating position', {
+      stepIndex,
+      hasMeasured,
+      actualSize,
+      targetMeasurement,
+      preferredPosition: step.position ?? 'auto',
+    });
+
     // Floating tooltip (no target measurement) - center on screen
     if (!targetMeasurement) {
-      return calculateFloatingPosition(actualSize);
+      const result = calculateFloatingPosition(actualSize);
+      log('Floating position result', result);
+      return result;
     }
 
     // Normal tooltip - position relative to target
     const preferredPosition: TooltipPosition = step.position ?? 'auto';
-    return calculateTooltipPosition(
+    const result = calculateTooltipPosition(
       targetMeasurement,
       actualSize,
       preferredPosition
     );
+    log('Position result', result);
+    return result;
   }, [
     targetMeasurement,
     step.position,
     theme.tooltip.maxWidth,
     tooltipSize,
     hasMeasured,
+    stepIndex,
   ]);
 
   // Navigation handlers

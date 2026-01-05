@@ -6,7 +6,7 @@
  * to tour.start().
  */
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,9 @@ import {
   Switch,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  IntroProvider,
   TourStep,
   useTour,
   useScrollView,
@@ -25,6 +27,131 @@ import {
 
 interface BasicTourScreenProps {
   isDark?: boolean;
+}
+
+/**
+ * Modal Demo Content - Separate component with its own IntroProvider
+ * This demonstrates how to show tours ON modal screens.
+ */
+interface ModalDemoContentProps {
+  isDark: boolean;
+  animationsEnabled: boolean;
+  onClose: () => void;
+}
+
+function ModalDemoContent({
+  isDark,
+  animationsEnabled,
+  onClose,
+}: ModalDemoContentProps) {
+  const colors = isDark ? Colors.dark : Colors.light;
+  const tour = useTour();
+
+  // Auto-start tour when component mounts
+  // Note: 'tour' is intentionally omitted from deps - its identity changes each render
+  // but the underlying context is stable. Including it would cause infinite re-runs.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      tour.start('modal-demo', {
+        animate: animationsEnabled,
+        animationDuration: 500,
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animationsEnabled]);
+
+  const handleClose = useCallback(() => {
+    if (tour.isActive) {
+      tour.stop('dismissed');
+    }
+    onClose();
+  }, [tour, onClose]);
+
+  return (
+    <SafeAreaView
+      style={[
+        styles.modalDemoContainer,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      {/* Header with close button */}
+      <View
+        style={[
+          styles.modalDemoHeader,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <TourStep
+          id="modal-header"
+          order={1}
+          group="modal-demo"
+          title="Modal Tour Works!"
+          intro="This tour is running inside a native modal with its own IntroProvider. The overlay renders correctly above the modal content!"
+        >
+          <View style={styles.modalDemoHeaderContent}>
+            <Text style={[styles.modalDemoTitle, { color: colors.text }]}>
+              Modal Demo
+            </Text>
+          </View>
+        </TourStep>
+        <TouchableOpacity style={styles.modalCloseButton} onPress={handleClose}>
+          <Text style={[styles.modalCloseText, { color: colors.accent }]}>
+            Close
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Modal content */}
+      <ScrollView style={styles.modalDemoContent}>
+        <TourStep
+          id="modal-feature"
+          order={2}
+          group="modal-demo"
+          title="Feature Spotlight"
+          intro="Elements inside modals can be highlighted just like regular screen content."
+        >
+          <View
+            style={[
+              styles.modalDemoCard,
+              {
+                backgroundColor: colors.cardBlue.bg,
+                borderLeftColor: colors.cardBlue.border,
+              },
+            ]}
+          >
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
+              Native Modal Support
+            </Text>
+            <Text
+              style={[styles.cardDescription, { color: colors.textSecondary }]}
+            >
+              Tours now work seamlessly with React Navigation modals and other
+              native presentations.
+            </Text>
+          </View>
+        </TourStep>
+
+        <TourStep
+          id="modal-action"
+          order={3}
+          group="modal-demo"
+          title="All Done!"
+          intro="Wrap your modal content with IntroProvider to enable tours inside modals!"
+        >
+          <TouchableOpacity
+            style={[styles.actionButton, { marginTop: 16 }]}
+            onPress={handleClose}
+          >
+            <Text style={styles.actionButtonText}>Complete Demo</Text>
+          </TouchableOpacity>
+        </TourStep>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 // Color schemes
@@ -67,6 +194,9 @@ export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
   // Completion modal state
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
+  // Modal demo state (demonstrates tour working above native modals)
+  const [showModalDemo, setShowModalDemo] = useState(false);
+
   // Register ScrollView for auto-scrolling during tour
   const { onScroll } = useScrollView(
     scrollRef as React.RefObject<ScrollableRef | null>
@@ -87,6 +217,16 @@ export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
       animationDuration: 500,
     });
   };
+
+  // Handle opening the modal demo
+  const handleOpenModalDemo = useCallback(() => {
+    setShowModalDemo(true);
+  }, []);
+
+  // Handle closing the modal demo
+  const handleCloseModalDemo = useCallback(() => {
+    setShowModalDemo(false);
+  }, []);
 
   return (
     <View style={styles.screenContainer}>
@@ -357,13 +497,33 @@ export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
         id="fab-button"
         order={5}
         title="Small Elements"
-        intro="The spotlight can highlight small elements too, like this floating action button!"
+        intro="The spotlight can highlight small elements too, like this floating action button! Tap it to open a modal demo."
         style={styles.fabWrapper}
       >
-        <TouchableOpacity style={styles.fabButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.fabButton}
+          activeOpacity={0.8}
+          onPress={handleOpenModalDemo}
+        >
           <Text style={styles.fabIcon}>+</Text>
         </TouchableOpacity>
       </TourStep>
+
+      {/* Modal Demo - demonstrates tour working above native modals */}
+      <Modal
+        visible={showModalDemo}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleCloseModalDemo}
+      >
+        <IntroProvider>
+          <ModalDemoContent
+            isDark={isDark}
+            animationsEnabled={animationsEnabled}
+            onClose={handleCloseModalDemo}
+          />
+        </IntroProvider>
+      </Modal>
     </View>
   );
 }
@@ -558,6 +718,42 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '300',
     marginTop: -2,
+  },
+  // Modal demo styles
+  modalDemoContainer: {
+    flex: 1,
+  },
+  modalDemoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  modalDemoHeaderContent: {
+    flex: 1,
+  },
+  modalDemoTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  modalCloseText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalDemoContent: {
+    flex: 1,
+    padding: 20,
+  },
+  modalDemoCard: {
+    padding: 20,
+    borderRadius: 12,
+    borderLeftWidth: 4,
   },
 });
 

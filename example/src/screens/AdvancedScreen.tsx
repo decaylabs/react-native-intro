@@ -12,6 +12,7 @@ import {
   TourStep,
   useIntro,
   useScrollView,
+  setDebugEnabled,
   type ScrollableRef,
 } from '@decaylabs/react-native-intro';
 import { DemoCard } from '../components/DemoCard';
@@ -52,8 +53,15 @@ export function AdvancedScreen({ isDark }: AdvancedScreenProps) {
   const [events, setEvents] = useState<string[]>([]);
   const [confirmOnExit, setConfirmOnExit] = useState(true);
   const [asyncDelay, setAsyncDelay] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
   // Force re-render to update dismissed status display
   const [, forceUpdate] = useState(0);
+
+  // Handle debug mode toggle
+  const handleDebugToggle = useCallback((enabled: boolean) => {
+    setDebugMode(enabled);
+    setDebugEnabled(enabled);
+  }, []);
 
   const addEvent = useCallback((event: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -266,6 +274,29 @@ export function AdvancedScreen({ isDark }: AdvancedScreenProps) {
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Async callbacks, confirmation dialogs, and programmatic control
       </Text>
+
+      {/* Debug Mode Toggle */}
+      <DemoCard
+        title="Debug Logging"
+        description="Enable detailed console logging to debug tour positioning and state changes."
+        isDark={isDark}
+      >
+        <View style={styles.settingRow}>
+          <Text style={[styles.settingLabel, { color: colors.text }]}>
+            Enable debug logs
+          </Text>
+          <Switch
+            value={debugMode}
+            onValueChange={handleDebugToggle}
+            trackColor={{ true: colors.success }}
+          />
+        </View>
+        {debugMode && (
+          <Text style={[styles.debugHint, { color: colors.success }]}>
+            Check Metro console for [TourOverlay], [Tooltip], [Positioning] logs
+          </Text>
+        )}
+      </DemoCard>
 
       {/* Async Callbacks Demo */}
       <TourStep id="async-card" order={1}>
@@ -485,5 +516,10 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  debugHint: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 8,
   },
 });

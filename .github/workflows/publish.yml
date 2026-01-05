@@ -55,14 +55,14 @@ jobs:
 
       - name: Release (auto-detect version)
         if: ${{ github.event.inputs.version == '' || github.event.inputs.version == null }}
-        run: npx release-it --ci --no-git.requireCleanWorkingDir
+        run: npx release-it --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
 
       - name: Release (manual version)
         if: ${{ github.event.inputs.version != '' && github.event.inputs.version != null }}
-        run: npx release-it --ci --no-git.requireCleanWorkingDir ${{ github.event.inputs.version }}
+        run: npx release-it --ci ${{ github.event.inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
