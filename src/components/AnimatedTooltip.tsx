@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { logAnimatedTooltip as log } from '../utils/debug';
 import { Animated, Easing } from 'react-native';
 import { Tooltip } from './Tooltip';
 import { hasReanimated } from '../utils/optionalDependencies';
@@ -30,9 +31,16 @@ interface AnimatedTooltipProps {
  * Wrapper component that adds animations to the Tooltip
  */
 export function AnimatedTooltip({ visible, ...props }: AnimatedTooltipProps) {
-  const { options } = props;
+  const { options, stepIndex, targetMeasurement } = props;
   const animateSetting = options.animate ?? 'auto';
   const duration = options.animationDuration ?? 300;
+
+  log('AnimatedTooltip render', {
+    visible,
+    stepIndex,
+    targetMeasurement,
+    animateSetting,
+  });
 
   // Determine animation mode
   const reanimatedAvailable = hasReanimated();
@@ -41,6 +49,7 @@ export function AnimatedTooltip({ visible, ...props }: AnimatedTooltipProps) {
 
   // If no animation, just show/hide
   if (!shouldAnimate) {
+    log('No animation, direct render', { visible });
     if (!visible) return null;
     return <Tooltip {...props} />;
   }
@@ -71,8 +80,10 @@ function FallbackAnimatedTooltip({
   useEffect(() => {
     // Update the target visibility
     targetVisibleRef.current = visible;
+    log('Visibility effect triggered', { visible, shouldRender });
 
     if (visible) {
+      log('Starting show animation');
       setShouldRender(true);
       // Stop any ongoing animations
       opacity.stopAnimation();
@@ -98,8 +109,11 @@ function FallbackAnimatedTooltip({
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(() => {
+        log('Show animation complete');
+      });
     } else {
+      log('Starting hide animation');
       // Stop any ongoing animations
       opacity.stopAnimation();
       scale.stopAnimation();
@@ -122,13 +136,16 @@ function FallbackAnimatedTooltip({
           useNativeDriver: true,
         }),
       ]).start(() => {
+        log('Hide animation complete', {
+          targetVisibleRef: targetVisibleRef.current,
+        });
         // Only hide if visibility hasn't changed back to true
         if (!targetVisibleRef.current) {
           setShouldRender(false);
         }
       });
     }
-  }, [visible, opacity, scale, translateY, duration]);
+  }, [visible, opacity, scale, translateY, duration, shouldRender]);
 
   if (!shouldRender) return null;
 

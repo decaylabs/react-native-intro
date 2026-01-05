@@ -3,6 +3,7 @@
  */
 
 import { Dimensions } from 'react-native';
+import { logPositioning as log } from './debug';
 import type { TooltipPosition, ElementMeasurement } from '../types';
 
 /**
@@ -223,10 +224,18 @@ export function calculateTooltipPosition(
 ): PositionResult {
   const screen = getScreenDimensions();
 
+  log('calculateTooltipPosition called', {
+    target,
+    tooltip,
+    preferredPosition,
+    screen,
+  });
+
   // For 'auto' mode, determine best priority based on target position
   // If target is in bottom half of screen, prefer 'top' first
   const targetCenterY = target.y + target.height / 2;
   const isTargetInBottomHalf = targetCenterY > screen.height / 2;
+  log('Target analysis', { targetCenterY, isTargetInBottomHalf });
 
   // Priority order based on preferred position and target location
   let positions: Exclude<TooltipPosition, 'auto'>[];
@@ -242,11 +251,14 @@ export function calculateTooltipPosition(
 
   // Remove duplicates
   const uniquePositions = [...new Set(positions)];
+  log('Trying positions in order', uniquePositions);
 
   // Try each position in order
   for (const position of uniquePositions) {
     const result = tryPosition(target, tooltip, screen, position, padding);
+    log(`tryPosition '${position}':`, result ? 'SUCCESS' : 'FAILED');
     if (result) {
+      log('Using position', result);
       return result;
     }
   }
@@ -255,6 +267,8 @@ export function calculateTooltipPosition(
   // Calculate overflow for all positions and pick the one with:
   // 1. No overlap with target (if possible)
   // 2. Lowest overflow score (most space available)
+
+  log('All positions failed, using fallback strategy');
 
   const allPlacements = (['top', 'bottom', 'left', 'right'] as const).map(
     (pos) => {
@@ -270,12 +284,17 @@ export function calculateTooltipPosition(
     }
   );
 
+  log('All placements calculated', allPlacements);
+
   // First, try to find a placement that doesn't overlap
   const nonOverlapping = allPlacements.filter((p) => !p.overlaps);
+  log('Non-overlapping placements', nonOverlapping);
+
   if (nonOverlapping.length > 0) {
     // Pick the one with the lowest score (least overflow)
     nonOverlapping.sort((a, b) => a.score - b.score);
     const best = nonOverlapping[0]!;
+    log('Using best non-overlapping placement', best);
     return {
       position: best.position,
       x: best.x,
@@ -289,10 +308,13 @@ export function calculateTooltipPosition(
   // Strategy: Find the placement direction with most space, then adjust Y
   // to ensure no overlap even if it means going partially off-screen
 
+  log('All placements overlap! Using adjusted fallback');
+
   // Sort by score (least overflow first) to find best direction
   allPlacements.sort((a, b) => a.score - b.score);
   // allPlacements always has 4 elements since we map over a fixed array
   const bestDirection = allPlacements[0]!;
+  log('Best direction before adjustment', bestDirection);
 
   // Calculate position that guarantees no overlap with target
   let finalX = bestDirection.x;
@@ -311,10 +333,20 @@ export function calculateTooltipPosition(
     case 'left':
       // Position tooltip so its right edge is left of target (with gap)
       finalX = Math.min(finalX, target.x - tooltip.width - DEFAULT_GAP);
+      // Also adjust Y to prevent vertical overlap if tooltip is taller than target
+      if (finalY + tooltip.height > target.y - DEFAULT_GAP) {
+        // Tooltip bottom extends into target area - move it up
+        finalY = Math.min(finalY, target.y - tooltip.height - DEFAULT_GAP);
+      }
       break;
     case 'right':
       // Position tooltip so its left edge is right of target (with gap)
       finalX = Math.max(finalX, target.x + target.width + DEFAULT_GAP);
+      // Also adjust Y to prevent vertical overlap if tooltip is taller than target
+      if (finalY + tooltip.height > target.y - DEFAULT_GAP) {
+        // Tooltip bottom extends into target area - move it up
+        finalY = Math.min(finalY, target.y - tooltip.height - DEFAULT_GAP);
+      }
       break;
   }
 
@@ -322,12 +354,14 @@ export function calculateTooltipPosition(
   finalX = Math.max(-tooltip.width + 50, Math.min(finalX, screen.width - 50));
   finalY = Math.max(-tooltip.height + 50, Math.min(finalY, screen.height - 50));
 
-  return {
+  const finalResult = {
     position: bestDirection.position,
     x: finalX,
     y: finalY,
     arrowPosition: bestDirection.arrowPosition,
   };
+  log('Final adjusted position', finalResult);
+  return finalResult;
 }
 
 /**

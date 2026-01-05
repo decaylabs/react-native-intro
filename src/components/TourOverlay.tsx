@@ -48,6 +48,8 @@ type TransitionState =
  * Renders a full-screen overlay with a spotlight cutout around the current
  * tour step's target element. Also renders the tooltip for the current step.
  */
+import { logTourOverlay as log } from '../utils/debug';
+
 export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   const { state, dispatch, measureElement, scrollToElement, tourCallbacks } =
     useIntroContext();
@@ -96,6 +98,10 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   // Accepts measurement directly to avoid closure timing issues
   const onMorphComplete = useCallback(
     (measurement: ElementMeasurement | null) => {
+      log('onMorphComplete called', {
+        measurement,
+        currentStepRef: currentStepRef.current,
+      });
       setTransitionState('ready');
       // NOW update the tooltip's measurement - after animation is done
       setCommittedMeasurement(measurement);
@@ -109,18 +115,30 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
     const stepIndex = tour.currentStepIndex;
     const targetId = currentStep?.targetId;
 
+    log('Step transition effect triggered', {
+      stepIndex,
+      targetId,
+      tourState: tour.state,
+      currentStepRef: currentStepRef.current,
+      displayedStepIndex,
+      transitionState,
+    });
+
     // Skip if tour isn't active
     if (tour.state !== 'active') {
+      log('Skipping - tour not active');
       return;
     }
 
     // Skip if we're already on this step
     if (currentStepRef.current === stepIndex) {
+      log('Skipping - already on this step');
       return;
     }
 
     const isFirstStep = currentStepRef.current === -1;
     currentStepRef.current = stepIndex;
+    log('Starting transition', { isFirstStep, stepIndex });
 
     // Check if this is a floating tooltip (no target element)
     const isFloating = !targetId;
@@ -164,15 +182,22 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
       }
 
       // Step 2: Scroll to element (if needed)
+      log('Step 2: Scrolling to element', { targetId });
       setTransitionState('scrolling');
       if (tour.options.scrollToElement !== false) {
         await scrollToElement(targetId);
       }
 
       // Step 3: Measure element at final position
+      log('Step 3: Measuring element', { targetId });
       const measurement = await measureElement(targetId);
+      log('Measurement result', measurement);
 
       // Update displayed step content
+      log('Updating displayed step', {
+        stepIndex,
+        stepTitle: currentStep?.title,
+      });
       setDisplayedStep(currentStep);
       setDisplayedStepIndex(stepIndex);
 
@@ -188,18 +213,29 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
       // Step 4: Start morph animation to new position
       if (measurement) {
+        log('Step 4: Starting morph animation', {
+          measurement,
+          isFirstStep,
+          shouldAnimate,
+        });
         setTransitionState('morphing');
         setSpotlightMeasurement(measurement);
 
         // For first step or no animation, complete immediately
         if (isFirstStep || !shouldAnimate) {
+          log('Completing immediately (first step or no animation)');
           onMorphComplete(measurement);
+        } else {
+          log('Waiting for SpotlightOverlay animation callback');
         }
         // Otherwise, onMorphComplete will be called by SpotlightOverlay
+      } else {
+        log('No measurement available!');
       }
     };
 
     performTransition();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- displayedStepIndex/transitionState are only used for debug logging
   }, [
     tour.currentStepIndex,
     tour.state,
@@ -216,11 +252,16 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
   // Reset when tour ends
   useEffect(() => {
+    log('Reset effect triggered', { tourState: tour.state });
     if (tour.state !== 'active') {
+      log('Resetting all state - tour is not active');
       currentStepRef.current = -1;
       setTransitionState('idle');
       setSpotlightMeasurement(null);
       setCommittedMeasurement(null);
+      // Reset displayed step to prevent stale data on next tour start
+      setDisplayedStep(undefined as unknown as typeof displayedStep);
+      setDisplayedStepIndex(-1);
     }
   }, [tour.state]);
 
