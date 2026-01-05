@@ -48,15 +48,18 @@ function ModalDemoContent({
   const tour = useTour();
 
   // Auto-start tour when component mounts
+  // Note: 'tour' is intentionally omitted from deps - its identity changes each render
+  // but the underlying context is stable. Including it would cause infinite re-runs.
   useEffect(() => {
     const timer = setTimeout(() => {
-      tour.start({
+      tour.start('modal-demo', {
         animate: animationsEnabled,
         animationDuration: 500,
       });
     }, 300);
     return () => clearTimeout(timer);
-  }, [tour, animationsEnabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animationsEnabled]);
 
   const handleClose = useCallback(() => {
     if (tour.isActive) {
@@ -85,6 +88,7 @@ function ModalDemoContent({
         <TourStep
           id="modal-header"
           order={1}
+          group="modal-demo"
           title="Modal Tour Works!"
           intro="This tour is running inside a native modal with its own IntroProvider. The overlay renders correctly above the modal content!"
         >
@@ -106,6 +110,7 @@ function ModalDemoContent({
         <TourStep
           id="modal-feature"
           order={2}
+          group="modal-demo"
           title="Feature Spotlight"
           intro="Elements inside modals can be highlighted just like regular screen content."
         >
@@ -133,6 +138,7 @@ function ModalDemoContent({
         <TourStep
           id="modal-action"
           order={3}
+          group="modal-demo"
           title="All Done!"
           intro="Wrap your modal content with IntroProvider to enable tours inside modals!"
         >
@@ -507,6 +513,7 @@ export function BasicTourScreen({ isDark = false }: BasicTourScreenProps) {
       <Modal
         visible={showModalDemo}
         animationType="slide"
+        presentationStyle="pageSheet"
         onRequestClose={handleCloseModalDemo}
       >
         <IntroProvider>

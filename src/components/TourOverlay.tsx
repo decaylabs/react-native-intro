@@ -78,6 +78,11 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   const [spotlightMeasurement, setSpotlightMeasurement] =
     useState<ElementMeasurement | null>(null);
 
+  // Committed measurement - only updated AFTER morph animation completes
+  // This prevents tooltip from being positioned based on mid-animation values
+  const [committedMeasurement, setCommittedMeasurement] =
+    useState<ElementMeasurement | null>(null);
+
   // Cache the displayed step to prevent content changing during transitions
   const [displayedStep, setDisplayedStep] = useState(currentStep);
   const [displayedStepIndex, setDisplayedStepIndex] = useState(
@@ -88,10 +93,16 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
   const currentStepRef = useRef<number>(-1);
 
   // Callback to signal morph animation is complete
-  const onMorphComplete = useCallback(() => {
-    setTransitionState('ready');
-    dispatch({ type: 'SHOW_TOOLTIP' });
-  }, [dispatch]);
+  // Accepts measurement directly to avoid closure timing issues
+  const onMorphComplete = useCallback(
+    (measurement: ElementMeasurement | null) => {
+      setTransitionState('ready');
+      // NOW update the tooltip's measurement - after animation is done
+      setCommittedMeasurement(measurement);
+      dispatch({ type: 'SHOW_TOOLTIP' });
+    },
+    [dispatch]
+  );
 
   // Handle step transitions
   useEffect(() => {
@@ -148,7 +159,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
         setSpotlightMeasurement(null);
 
         // Complete immediately (no morph animation for floating)
-        onMorphComplete();
+        onMorphComplete(null);
         return;
       }
 
@@ -182,7 +193,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
 
         // For first step or no animation, complete immediately
         if (isFirstStep || !shouldAnimate) {
-          onMorphComplete();
+          onMorphComplete(measurement);
         }
         // Otherwise, onMorphComplete will be called by SpotlightOverlay
       }
@@ -209,6 +220,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
       currentStepRef.current = -1;
       setTransitionState('idle');
       setSpotlightMeasurement(null);
+      setCommittedMeasurement(null);
     }
   }, [tour.state]);
 
@@ -330,7 +342,7 @@ export function TourOverlay({ theme = classicTheme }: TourOverlayProps) {
           step={displayedStep}
           stepIndex={displayedStepIndex}
           totalSteps={tour.steps.length}
-          targetMeasurement={spotlightMeasurement}
+          targetMeasurement={committedMeasurement}
           options={tour.options}
           theme={theme}
           visible={showTooltip}
@@ -363,7 +375,7 @@ function SpotlightOverlay({
   animate: boolean;
   duration: number;
   onOverlayPress: () => void;
-  onMorphComplete: () => void;
+  onMorphComplete: (measurement: ElementMeasurement | null) => void;
   isMorphing: boolean;
   disableInteraction: boolean;
 }) {
@@ -394,7 +406,7 @@ function SpotlightOverlay({
       isFirstRender.current = false;
 
       if (isMorphing) {
-        onMorphComplete();
+        onMorphComplete(measurement);
       }
     } else {
       // Animate to new position/size
@@ -425,7 +437,7 @@ function SpotlightOverlay({
         }),
       ]).start(() => {
         if (isMorphing) {
-          onMorphComplete();
+          onMorphComplete(measurement);
         }
       });
     }
